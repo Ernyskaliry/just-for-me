@@ -1,0 +1,1161 @@
+ИСПРАВЛЕНИЯ v2: архитектура записи и Git в Mirraylina Routine 2.0 — только предложения
+Подготовлено 17 ноя 2026, около 15:10 МСК. Режим Proposal Only.
+Ничего не применено, не протестировано и не запускалось.
+
+======================================================================
+1. ИЗМЕНЁННЫЕ ЧЕРНОВЫЕ ФАЙЛЫ
+======================================================================
+Предложения v2 (рабочая папка /workspace/drafts/fix/new-v2/):
+- /workspace/drafts/fix/new-v2/routine-2.0-prompt.txt — для Routine mirraylina-daily-account-analysis-2-0 (только поле prompt)
+- /workspace/drafts/fix/new-v2/mirraylina-archive-management.SKILL.md — для /home/box/agent-data/workflows/mirraylina-archive-management/SKILL.md
+- /workspace/drafts/fix/new-v2/mirraylina-learning-history-experiments.SKILL.md — для /home/box/agent-data/workflows/mirraylina-learning-history-experiments/SKILL.md
+- /workspace/drafts/fix/new-v2/mirraylina-source-tracking.SKILL.md — для /home/box/agent-data/workflows/mirraylina-source-tracking/SKILL.md
+- /workspace/drafts/fix/new-v2/dryrun-prompt.txt и dryrun-setup.sh — копии файлов из review/
+Вспомогательные черновики в /workspace/drafts/review/ (обновлены на месте):
+- dryrun-prompt.txt, dryrun-setup.sh — версия v2. Версия v1 сохранена в /workspace/drafts/fix/new/, оригиналы — в /workspace/drafts/fix/live/*.orig.*
+- README-line98.proposed.diff — предложение по README, НЕ применено
+- README.current-copy.md — копия текущего README (прочитан как обычный файл через cp, без git); README.proposed.md — README с предложенной строкой 98
+- ИСПРАВЛЕНИЯ-routine-2.0-v2.txt — этот отчёт
+Проверки: /workspace/drafts/fix/checks-v2.sh, вывод в /workspace/drafts/fix/checks-v2.out (целиком в разделе 8).
+Не меняются: mirraylina-rp-account-analytics, mirraylina-competitor-research, mirraylina-content-engine. В них нет записи и git-команд (проверка 3).
+Отчёт v1 (/workspace/drafts/fix/ИСПРАВЛЕНИЯ-routine-2.0.txt) заменён этим отчётом.
+
+======================================================================
+2. ПРИЧИНЫ ИЗМЕНЕНИЙ ПО ФАЙЛАМ (v1 → v2)
+======================================================================
+Объём правок v1→v2 (строк в diff): промпт 40, Archive 149, Learning 60, Source 25, dryrun-prompt 77, dryrun-setup 187.
+
+routine-2.0-prompt.txt
+- (п.1) Этап 0 ссылается на точную проверку всех fetch- и push-адресов origin по списку из навыка. «Не удалось определить однозначно» (пустой вывод, ошибка команды, ошибка сети) приравнено к сбою, учётные данные в диагностике маскируются.
+- (п.2) Pull теперь явный: `git pull --ff-only origin main`. Синхронность проверяется тремя значениями: HEAD = локальная remote-tracking ссылка = ls-remote. Базовый sha remote берётся из ls-remote. Push — только `git push origin HEAD:refs/heads/main`. Перед ним pre-push ls-remote, который должен совпасть с базой. После него ls-remote должен совпасть с локальным коммитом. При отклонении действует логика ls-remote (раздел 6).
+- (п.3) Контракт из 8 полей назван по именам, `этап-источник` ∈ {1, 3, 6b, 7} для Routine. MANUAL Routine никогда не создаёт, и сообщение пользовательницы не считается разрешением на запись.
+- (п.4) Добавлен этап 6b, второй вызов Learning History: точные входы и выход, не больше одного запроса `skip:<дата>`, «статус пропуска неизвестен» вместо выдуманного пропуска. Этапы 3, 6b и 7 завершаются до этапа 8.
+- (п.6) При неожиданном staged diff — немедленный стоп без отката: никаких reset, restore, checkout, clean, stash. Убрано «снять из индекса свои пути».
+- Правило Git safety дополнено: единственная форма push, никакого автоматического отката. Строка доставки: остановка этапа 8 сообщается всегда.
+- Не изменены (проверено diff): строки 1–3, правила Never post, Posting gap, Substantial, Experimental, Do not change и Final agreed, Report format.
+
+mirraylina-archive-management.SKILL.md
+- (п.1) Новый раздел «Допустимые адреса remote»: 4 точные строки, нормализация, методы проверки fetch и push, поведение при нескольких адресах, учётные данные.
+- (п.2) Preflight: pull с явной целью, проверка трёх sha, базовый sha из ls-remote. Новый раздел «Push»: повторная проверка адресов, pre-push sha, явная цель, проверка после push, логика при отклонении.
+- (п.3) Контракт оформлен таблицей «поле → допустимые значения» с форматами `ключ-дубликата`. Новый подраздел «Источник MANUAL». В allowlist добавлена колонка «допустимые `этап-источник`»: Перерывы.md и События.md — только MANUAL.
+- (п.6) Новый раздел «Остановка при неожиданном изменении». Шаг 9 проверяет, что перед staging в дереве изменены только пути этого шага. Шаг 10: `git add -- <путь>` по одному, без -A, ., -u, commit -a и pathspec-коммита. Шаг 12: стоп на D, R, C, T и на путях вне allowlist. Удалено `git restore --staged`.
+- Описание во frontmatter: «exact remote check», «explicit push», ручные указания пользовательницы.
+
+mirraylina-learning-history-experiments.SKILL.md
+- (п.4) Разделы «Вызов 1 (этап 3)» и «Вызов 2 (этап 6b)». Вызов 1 не готовит статус пропуска. Вызов 2 готовит только его, не больше одного запроса, с правилами «неизвестен».
+- (п.3) Контракт: те же 8 имён полей и значения из общего списка. Здесь `этап-источник` ∈ {3, 6b}, `операция` ∈ {добавить запись, создать отсутствующий файл}, MANUAL не используется.
+
+mirraylina-source-tracking.SKILL.md
+- (п.3) Контракт: те же 8 имён полей, `этап-источник` = 7, ключи `ledger:…`, `ledger-total:…`, `ledger-meta:обновлено`. Строка итогов приведена к реальной таблице (5 колонок). MANUAL не используется; исправление прошлых записей — только запросом MANUAL от основного агента.
+
+dryrun-prompt.txt и dryrun-setup.sh
+- (п.1) Вместо `grep -q "$REMOTE_EXPECTED"` (подстрока) — функция `url_ok` с точным `case` по 4 строкам и проверкой каждой строки `get-url --all`. В песочнице push-адреса (`get-url --push --all`) должны быть ровно `no_push`.
+- (п.5) Три понятия разведены: локальный HEAD, локальная remote-tracking ссылка и фактическая ветка на GitHub. `git rev-parse origin/main` больше нигде не выдаётся за состояние GitHub. Состояние GitHub проверяется только через ls-remote (сетевое чтение, только из песочницы и только когда пользовательница сама запустит скрипт).
+- Добавлен этап 6b, контракт и отсутствие MANUAL. Этап 8 теста повторяет боевой до команды push: проверка адресов, pre-push ls-remote, сама отправка не выполняется.
+- (п.6) В тесте тот же раздел «Остановка», без отката.
+- В `--verify` Перерывы.md и События.md исключены из разрешённых путей, потому что в прогоне нет MANUAL.
+
+======================================================================
+3. UNIFIED DIFF
+======================================================================
+3.1 live → v2: промпт Routine, Archive Management, Learning History, Source Tracking; orig → v2: dryrun-prompt.txt, dryrun-setup.sh.
+(diff v1 → v2 можно получить: diff -u /workspace/drafts/fix/new/<файл> /workspace/drafts/fix/new-v2/<файл>; краткое содержание — в разделе 2.)
+
+--- live/routine-2.0-prompt.live.txt
++++ new-v2/routine-2.0-prompt.txt
+@@ -3,28 +3,42 @@
+ Source of account data: the account profile in the Mirraylina vault repo (/workspace/vault-repo, remote github.com/Ernyskaliry/Mirraylina), file Настройки/Профиль аккаунта.md: handle, user id, timezone, posting window, approved strategy, canon and post rules, competitor roster, archive paths. Use ONLY this bot's data; never read or write another bot's repo, roster, canon or ledgers. If the profile file is missing or incomplete, stop at that point and tell the user exactly what is missing instead of guessing.
+ 
+ Run these stages in order, each using the Mirraylina copy of the named skill (load it by name each run so the latest version is used):
++0. Git Preflight — @Mirraylina — Archive Management, section «Preflight» only (no file edits). Runs before stage 1 and before any write. Follow the skill's Preflight steps exactly: exact remote check of every fetch and push URL of origin against the skill's URL allowlist; repo root /workspace/vault-repo; branch main; `git status --porcelain` empty; `git pull --ff-only origin main`; HEAD = origin/main (local remote-tracking ref) = `git ls-remote origin refs/heads/main` (actual remote branch); record base HEAD and base remote sha (from ls-remote).
++   If any Preflight step fails or cannot be determined unambiguously (empty output, command error, network error), the run ends here: stages 1–8 do not run, no file writes, no commits, no pushes. Still send the user a short report with the failed step and the diagnostics (credentials in URLs masked).
+ 1. Own account analysis — @Mirraylina — RP Account Analytics.
+ 2. Competitor and trend research — @Mirraylina — Competitor Research.
+-3. Learning history and experiments update — @Mirraylina — Learning History & Experiments (read past lessons first, then add today's observations and experiment status).
++3. Learning history and experiments, call 1 — @Mirraylina — Learning History & Experiments, READ-ONLY: read past lessons, analyse stages 1–2, prepare change requests for today's observations and experiment status. Does not write.
+ 4. Content strategy for this run — @Mirraylina — Content Engine, planning part: which days are already covered by agreed posts, declared break days, which post type and technique fit the approved strategy now.
+ 5. Post drafts — @Mirraylina — Content Engine, drafting part.
+ 6. Quality and canon check — @Mirraylina — Content Engine checklist plus the profile's canon and post rules; fix or drop any draft that fails.
+-7. Source accounting — @Mirraylina — Source Tracking.
+-8. Archive — @Mirraylina — Archive Management (archive, index, learning journal, source ledger, breaks note) in this bot's repo only.
++6b. Learning history, call 2 (run status) — @Mirraylina — Learning History & Experiments, section «Вызов 2», READ-ONLY. Input: the stage-3 change list (keys only, to avoid duplicates), whether stages 1–2 actually ran, the stage-4 result (days already covered / declared break), and the stage-6 result: completed or failed, number of drafts that passed. Output: at most ONE change request with `ключ-дубликата` = `skip:<YYYY-MM-DD>` («пропуск» or «черновик есть»); it does not repeat any stage-3 observation. If stage 6 failed or did not provide its result, or the day needed no draft (covered by agreed posts or a declared break), no skip record is prepared and the report says «статус пропуска неизвестен» with the reason.
++7. Source accounting — @Mirraylina — Source Tracking, READ-ONLY: read the source ledger, prepare the run record and recounted totals as change requests. Does not write.
++8. Archive — @Mirraylina — Archive Management, section «Запись»: the ONLY stage that writes to the repo, commits and pushes. Stages 3, 6b and 7 have finished before it starts; it applies their change requests and archives/indexes posts from stage-1 data, then one commit and `git push origin HEAD:refs/heads/main`, in this bot's repo only.
+ 9. Short report to the user.
+ 
+-Dependencies: a stage that needs another stage's data runs only if that data was actually obtained. If a stage fails or a source/integration is unavailable (X reads, rate limits, git, a missing file), say so explicitly in the report, mark the dependent conclusions as not made, and continue only with stages that don't depend on it. Never invent metrics, trends, sources or results.
++Write ownership: after a successful Preflight, stages 1–7 (including 6b) only read files and produce results; they never create, edit or append files and never run git commands that change the repo. Stages 3, 6b and 7 hand their change requests to stage 8 and do not write them themselves. Every change request uses the contract defined in Archive Management, with exactly these 8 fields: `путь`, `операция`, `содержимое`, `дата`, `этап-источник`, `основание`, `ключ-дубликата`, `статус`. Allowed `этап-источник` values in this routine: `1`, `3`, `6b`, `7`. The value `MANUAL` is only for a change the user explicitly asked for in the chat; this routine never creates MANUAL requests and never treats a user message as permission for a write. Stage 8 applies only what it received (and post data from stage 1); it never invents record content.
++
++Stage 8 safe write (details in Archive Management, section «Запись»):
++- before the first write: HEAD still equals the base HEAD; the tree is still clean; every `путь` is exactly in the skill's path allowlist; otherwise no writes;
++- read each file right before editing; keep the user's records and formatting; minimal targeted edits; no duplicates (by `ключ-дубликата`); no deleting or moving files;
++- stage only the explicit allowlisted paths (`git add -- <path>`; never `git add -A`, `git add .` or `git commit -a`); then `git diff --cached --check`, `git diff --cached --name-status` (every path must be in the allowlist, status A or M only) and the full staged diff;
++- anything unexpected: stop immediately, no commit, no push, no rollback of any kind (no reset, restore, checkout, clean, stash); leave the repo exactly as it is and give the user the diagnostic report from the skill; the next Preflight will stop on the dirty tree until she decides herself;
++- nothing to change: no commit (no empty commits);
++- one commit with a short Russian message; re-check the origin URLs; record the pre-push remote sha (`git ls-remote origin refs/heads/main`), which must still equal the base remote sha (if it differs or ls-remote fails: no push, the commit stays local, report); push with `git push origin HEAD:refs/heads/main` (never force); verify that ls-remote now returns the local commit sha and the tree is clean;
++- push rejected: no force, pull, rebase, merge or conflict resolution; run ls-remote again: equal to the pre-push sha → at most one retry; changed → no retry; ls-remote fails → stop. In every failure case the local commit is kept and the user is told it stayed local and was not pushed.
++
++Dependencies: a stage that needs another stage's data runs only if that data was actually obtained. If a stage fails or a source/integration is unavailable (X reads, rate limits, git, a missing file), say so explicitly in the report, mark the dependent conclusions as not made, and continue only with stages that don't depend on it. Exception: a failed Git Preflight (stage 0) stops the whole run before stage 1, and a failed check in stage 8 means no write, commit or push. Never invent metrics, trends, sources or results.
+ 
+ Rules:
+ - Never post, reply, like, follow, DM or otherwise interact with anyone on X. Drafts are text for the user only.
+ - Posting gap: the gap between published posts must not exceed 7 days, except breaks the user declared (recorded in Посты/Перерывы.md, internal only, never mentioned in posts). If the gap is approaching 7 days, prioritise a ready-to-post, easy draft and say so in one gentle line.
+-- No good idea: offer an alternative or evergreen format instead of skipping. Track skipped runs (runs with no usable draft) in the learning journal; after two consecutive skips, run an intensified search (more roster accounts in depth, trend and seasonal search, archive of past top posts) on the next run and say it was intensified.
++- No good idea: offer an alternative or evergreen format instead of skipping. Track skipped runs (runs with no usable draft) in the learning journal: stage 6b prepares the record, stage 8 writes it; the number of consecutive skips is read from the journal (read-only, records with key `skip:<date>`) before stage 2. After two consecutive skips, run an intensified search (more roster accounts in depth, trend and seasonal search, archive of past top posts) on the next run and say it was intensified.
+ - Substantial strategy changes (post types, balance, posting window, tone, roster) are proposals only and need the user's approval.
+ - Experimental posts only with a prior explanation: the hypothesis, what is being tested, how it will be measured; the experiment starts only after the user approves.
+ - Do not change this routine's schedule or any routine without the user's consent.
+-- Git safety: pull first, never force-push, reset --hard, delete branches or files, or resolve conflicts in my favour; never overwrite the user's edits. On conflict, stop and report.
++- Git safety: one sync per run, only in stage 0 (`git pull --ff-only origin main`; never `--rebase`, never a plain merge pull); the only writes, commit and push are in stage 8, and the only push form is `git push origin HEAD:refs/heads/main`; never force-push, reset, restore, checkout, clean, stash, rebase, merge, delete branches or files, or resolve conflicts in my favour; never overwrite the user's edits; never roll anything back automatically. On a dirty tree, failed sync, unexpected staged diff, conflict, rejected push with a changed remote or an ls-remote error: stop and report.
+ - Final agreed post texts are never changed.
+ 
+ Report format (compact, Russian): last post and median; 3–5 niche findings; roster freshness and new-author proposals; learning/experiment update; drafts with date, type, recommended MSK time and text in code blocks (recommended one marked); coverage and sources actually used; archive status with commit hashes; anything unavailable; reminder to run Git: Pull.
+ 
+-Deliver the report to the user in this Grok Bot chat. If there is genuinely nothing new and no draft is needed, stay quiet.
++Deliver the report to the user in this Grok Bot chat. If there is genuinely nothing new and no draft is needed, stay quiet; a failed Git Preflight, a stage-8 stop or a commit that stayed local is always reported.
+--- live: /home/box/agent-data/workflows/mirraylina-archive-management/SKILL.md
++++ new-v2/mirraylina-archive-management.SKILL.md
+@@ -1,51 +1,142 @@
+ ---
+ name: Mirraylina — Archive Management
+ description: >-
+-  Only for the Mirraylina bot: use when it reads from or saves to its own
+-  Obsidian vault git repo (post archive, notes, ledgers, journals) with safe
+-  pull, commit and push. Other bots must not run this copy.
++  Only for the Mirraylina bot: the only skill that writes to its own Obsidian
++  vault git repo (post archive, notes, ledgers, journals): Git Preflight with
++  exact remote check and pull --ff-only, applying change requests from other
++  skills or the user's explicit chat instructions, safe commit and explicit
++  push. Other bots must not run this copy.
+ ---
+ # Archive Management — копия бота Mirraylina
+ 
+ Эта копия только для бота Mirraylina. Путь к локальной копии и remote — из профиля этого бота.
+ 
++Это ЕДИНСТВЕННЫЙ навык, который пишет в хранилище: применяет изменения к файлам, создаёт разрешённые отсутствующие файлы, индексирует архив, делает коммит и push. Все остальные навыки mirraylina-* работают с хранилищем только на чтение и передают сюда запросы изменений.
++
+ ## Условия применения
+-- Любое чтение или запись в хранилище бота.
++- Этап 0 Routine (Git Preflight) — только раздел «Preflight», без правки файлов.
++- Этап 8 Routine — единственная запись, коммит и push за запуск (раздел «Запись»).
++- Ручная задача в чате, когда пользовательница прямо попросила конкретное изменение: тот же «Preflight» (один раз), потом тот же раздел «Запись» с запросами `MANUAL`. Одна синхронизация на задачу.
+ 
+ ## Входные данные
+ 1. Профиль аккаунта: локальный путь, remote, ветка, структура папок, формат таблиц архива.
+-2. Данные от других навыков.
+-
+-Нет пути или remote, или он не этого бота — остановиться и спросить. Не писать в чужой репозиторий.
+-
+-## Последовательность
+-1. `git status` — чужие незакоммиченные изменения не трогать; сообщить.
+-2. `git pull --rebase` перед любой записью.
+-3. Прочитать файл перед изменением; менять точечно, сохраняя правки пользователя.
+-4. Архив: новые оригиналы и цитаты — в тематические заметки по формату профиля; метрики обновлять только у постов моложе 7 дней; уважать размещение пользователя.
+-5. Обновить индекс (число постов, медиана, лучшие посты, время замера).
+-6. Коммит с коротким сообщением на языке пользователя; push.
+-7. Напомнить сделать Git: Pull в Obsidian.
++2. Запросы изменений по контракту ниже: от этапов 3 и 6b (Learning History & Experiments), 7 (Source Tracking) или `MANUAL`.
++3. Данные постов от этапа 1 (RP Account Analytics) — для архива и индекса.
++4. Базовый HEAD и базовый sha remote, сохранённые в Preflight.
++
++Конфигурация Mirraylina: путь `/workspace/vault-repo`, remote `origin` = репозиторий GitHub `Ernyskaliry/Mirraylina`, ветка `main`. Не совпадает — остановиться и сообщить. Не писать в чужой репозиторий.
++
++## Допустимые адреса remote (точное совпадение)
++Разрешены только эти строки, целиком:
++- `https://github.com/Ernyskaliry/Mirraylina.git`
++- `https://github.com/Ernyskaliry/Mirraylina`
++- `git@github.com:Ernyskaliry/Mirraylina.git`
++- `ssh://git@github.com/Ernyskaliry/Mirraylina.git`
++Нормализация: только удалить завершающий перевод строки (`\n`, `\r`) из вывода команды. Регистр, завершающий `/`, `.git`, порт, логин, токен, query и fragment не нормализуются: любое отличие — не совпадение. Частичное совпадение (подстрока) не используется.
++- Fetch: `git remote get-url --all origin` — каждая строка вывода должна точно совпасть с одной из разрешённых.
++- Push: `git remote get-url --push --all origin` — то же для каждой строки (git подставляет pushurl, если он задан, иначе url; правила insteadOf/pushInsteadOf уже применены).
++- Несколько адресов — проверяется каждый; хотя бы один не прошёл — СТОП.
++- Ошибка команды, пустой вывод, нет remote `origin` — СТОП: «адрес remote не удалось определить однозначно», с выводом команды.
++- Адрес с учётными данными (`https://<что-угодно>@github.com/...`) не входит в список — СТОП. В диагностике часть между `//` и `@` заменять на `***`, токены в отчёт и в чат не выводить.
++
++## Контракт запроса изменения (один для всех навыков)
++Ровно 8 полей, имена как здесь:
++| Поле | Допустимые значения |
++|---|---|
++| `путь` | точная строка из таблицы «Разрешённые пути» |
++| `операция` | `добавить запись` · `обновить запись` · `создать отсутствующий файл` |
++| `содержимое` | точный текст записи или строк таблицы; для `обновить запись` — `было: … / стало: …`; для `создать отсутствующий файл` — пустой шаблон (заголовок и шапка таблицы), без истории |
++| `дата` | `YYYY-MM-DD` по МСК — день запуска или день указания пользовательницы |
++| `этап-источник` | `1` · `3` · `6b` · `7` · `MANUAL` |
++| `основание` | непустое: ссылки, цифры, пути, на которых основана запись; для `MANUAL` — `цитата: «<дословные слова пользовательницы>»; сообщение: <id сообщения или дата и время МСК>; канал: чат Grok Bot` |
++| `ключ-дубликата` | `post:<id поста>` · `index:Архив постов` · `ledger:<YYYY-MM-DD>:<@handle>` · `ledger-total:<@handle>` · `ledger-meta:обновлено` · `obs:<YYYY-MM-DD>:<кратко>` · `hyp:<кратко>:<YYYY-MM-DD>` · `exp:<кратко>:<YYYY-MM-DD>` · `skip:<YYYY-MM-DD>` · `break:<YYYY-MM-DD>` · `event:<название>:<год>` · `file:<путь>` |
++| `статус` | `обязательное` · `необязательное` |
++Запрос, где нет поля или значение вне списка, не применяется: в отчёте «не применено: неполный запрос». Archive Management ничего не дописывает в запросы и не создаёт записей, которых не прислали.
++
++### Источник MANUAL
++- Создаёт его только основной агент в чате (Mirraylina), и только когда пользовательница в этом чате прямо попросила это конкретное изменение (какой файл или какую запись). Предположение, обсуждение, «наверное стоит» — не указание: переспросить, запрос не создавать.
++- `основание` обязательно содержит дословную цитату указания, ссылку на сообщение (id или дата и время МСК) и канал. `содержимое` должно точно соответствовать цитате; есть сомнение — не применять, переспросить.
++- Routine (этапы 0–9) запросы `MANUAL` никогда не создаёт и не принимает: `MANUAL` в запуске Routine — не применяется, сообщить.
++- `MANUAL` проходит те же проверки, что и все: Preflight, allowlist путей, проверки до записи, staged diff, правила push.
++
++## Разрешённые пути (allowlist)
++Писать можно только сюда. Всё остальное, включая профиль, канон, README, заметки персонажа, `Гипноз/`, `Отношения/`, шаблоны, — только чтение.
++| `путь` | Допустимые `этап-источник` | Создание, если файла нет |
++|---|---|---|
++| `Посты/Архив постов.md` | `1` (пересчёт индекса), `MANUAL` | нет (файл есть) |
++| `Посты/Гипноз.md`, `Посты/Лор.md`, `Посты/Юмор.md`, `Посты/Опросы и выбор.md`, `Посты/Femdom.md`, `Посты/Sub.md`, `Посты/Размышления.md`, `Посты/Коллабы.md`, `Посты/Праздники и события.md`, `Посты/Другое.md` | `1`, `MANUAL` | нет (файлы есть) |
++| `Посты/Учёт источников.md` | `7`, `MANUAL` | нет (файл есть) |
++| `Обучение/Журнал наблюдений.md` | `3`, `6b`, `MANUAL` | только после подтверждения пользовательницы (новая папка) |
++| `Обучение/Эксперименты.md` | `3`, `MANUAL` | только после подтверждения пользовательницы (новая папка) |
++| `Посты/Перерывы.md` | только `MANUAL` | только после подтверждения пользовательницы |
++| `Посты/События.md` | только `MANUAL` | только после подтверждения пользовательницы; до этого не писать |
++Источник не из колонки — не применять. Пока создание не подтверждено, запросы «создать отсутствующий файл» и записи в этот файл не применяются: «не применено: файл не создан, нужно подтверждение».
++
++## Preflight (этап 0) — до любых записей
++1. Адреса remote: fetch и push по разделу «Допустимые адреса remote». Не прошло — СТОП.
++2. `git rev-parse --show-toplevel` = `/workspace/vault-repo`; `git branch --show-current` = `main`. Иначе — СТОП.
++3. `git status --porcelain` — должен быть пустым.
++4. Не пустой (в том числе после остановленного прошлого этапа 8) — СТОП всего запуска. Не исправлять, не делать stash, reset, restore, checkout, clean, commit или удаление; сообщить, какие файлы изменены, и что решение за пользовательницей.
++5. `git pull --ff-only origin main`.
++6. Не получилось — СТОП всего запуска до любых изменений; сообщить вывод git.
++7. Синхронность: `git rev-parse HEAD` = `git rev-parse refs/remotes/origin/main` (локальная remote-tracking ссылка) = sha из `git ls-remote origin refs/heads/main` (фактическая ветка на GitHub). Вывод ls-remote — ровно одна строка `<40 hex>\trefs/heads/main`; ошибка, пустой или иной вывод — СТОП.
++8. Сохранить базовый HEAD и базовый sha remote (из ls-remote).
++Других pull, fetch со слиянием, rebase или merge за запуск нет.
++
++## Запись (этап 8 или ручная задача после Preflight)
++1. Проверки до первой записи: `git rev-parse HEAD` = базовый HEAD; `git status --porcelain` пустой; ветка `main`. Не так — не писать, сообщить.
++2. Каждый запрос: поля по контракту; `путь` точно в allowlist; `этап-источник` разрешён для этого пути. Иначе пункт не применяется и попадает в отчёт.
++3. Архив: из данных этапа 1 — новые оригиналы и цитаты в тематические заметки по формату профиля; метрики обновлять только у постов моложе 7 дней; уважать размещение пользователя. Поля только из данных этапа 1; нет поля — «нет данных».
++4. Запросы этапов 3, 6b, 7 и `MANUAL` применять как есть, без дописывания.
++5. Прочитать актуальное содержимое файла непосредственно перед правкой; менять точечно, сохраняя записи и форматирование пользователя.
++6. Перед добавлением искать запись по `ключ-дубликата`; уже есть — не добавлять повторно.
++7. Не удалять, не перемещать и не переименовывать файлы.
++8. Обновить индекс (число постов, медиана, лучшие посты, время замера) — пересчётом из таблиц.
++9. `git status --porcelain --untracked-files=all` — в нём только пути, которые этот шаг сам изменил. Любой другой путь — «неожиданное изменение», СТОП (раздел «Остановка»).
++10. `git add -- <путь>` для каждого изменённого пути из allowlist по отдельности. Никогда `git add -A`, `git add .`, `git add -u`, `git commit -a` или коммит с pathspec.
++11. `git diff --cached --check`; `git diff --cached --name-status` — каждая строка: статус `A` или `M` и путь точно из allowlist; полный `git diff --cached` — сверить с запросами.
++12. Что-то не так (ошибка --check, путь вне allowlist, `D`, `R`, `C`, `T`, изменение чужих записей пользователя, лишний файл) — СТОП (раздел «Остановка»).
++13. Изменений нет — коммит не создавать.
++14. Один коммит `git commit -m "<короткое сообщение на русском>"`.
++
++## Push
++1. Повторить проверку адресов remote (fetch и push). Не прошло — без push, коммит остаётся локально.
++2. Pre-push sha: `git ls-remote origin refs/heads/main`. Ошибка или иной вывод — без push. Sha ≠ базовому sha remote (ветка на GitHub изменилась за время запуска) — без push. В обоих случаях коммит остаётся локально, сообщить.
++3. `git push origin HEAD:refs/heads/main` (без force, другой формы push нет).
++4. Успех: `git ls-remote origin refs/heads/main` = `git rev-parse HEAD`; `git status --porcelain` пустой. ls-remote не удался или sha другой — сообщить «push не подтверждён», ничего не исправлять.
++5. Push отклонён: без force, pull, rebase, merge и разрешения конфликтов. Снова `git ls-remote origin refs/heads/main`:
++   - sha = pre-push sha (ветка не изменилась) — не больше одного повтора шага 3;
++   - sha другой — повтора нет; стоп;
++   - ls-remote не удался — стоп.
++   Во всех случаях локальный коммит сохраняется; сообщить пользовательнице, что коммит остался локально и не отправлен, с хэшем.
++6. Напомнить сделать Git: Pull в Obsidian.
++
++## Остановка при неожиданном изменении
++- Сразу прекратить этап: без коммита, без push, без отката. Не выполнять `git reset`, `git restore`, `git checkout`, `git clean`, `git stash` и любые другие команды, меняющие индекс или файлы. Всё оставить как есть.
++- Отчёт (только команды чтения): текущая ветка (`git branch --show-current`); базовый HEAD и текущий HEAD (`git rev-parse HEAD`); изменённые, добавленные и удалённые файлы (`git status --porcelain=v1 --untracked-files=all`); staged diff (`git diff --cached --name-status` и `git diff --cached`); unstaged diff, если есть (`git diff --name-status` и `git diff`); причина остановки; коммит: не создан; push: не выполнялся.
++- Пользовательнице: что посмотреть (список файлов, какие правки сделал бот по запросам, есть ли среди изменённых её файлы) и что решение за ней: например, проверить и закоммитить самой, отменить правки бота самой в своём Git-клиенте или Obsidian, или дать мне отдельное прямое указание. Способ автоматической очистки не предлагать.
++- Следующий Preflight остановится на грязном дереве, пока пользовательница не разберётся.
+ 
+ ## Правила принятия решений
+-- Конфликт — стоп, `git rebase --abort` при необходимости, сообщить; не разрешать в свою пользу.
+-- Никогда: `push --force`, `reset --hard`, удаление веток или файлов пользователя без явной просьбы.
++- Конфликты не разрешать ни в свою пользу, ни автоматически; историю не переписывать; ничего не откатывать автоматически.
++- Никогда: `push --force`, `reset`, `restore`, `checkout` файлов, `clean`, `stash`, `rebase`, `merge`, удаление веток или файлов пользователя без явной просьбы.
+ - Пропускать чистые репосты и ответы в RP-ветках, если профиль не говорит иначе.
+ - Не хранить пароли, ключи и личные данные.
+ 
+ ## Проверка результата
+-- После push `git status` чистый, коммит есть в remote.
+-- Правки пользователя на месте.
++- После push ls-remote = локальный HEAD, `git status` чистый.
++- Правки пользователя на месте; в коммите только пути из allowlist со статусом A или M.
++- Каждая применённая запись есть в запросах или в данных этапа 1.
+ 
+ ## Формат результата
+-Сколько постов добавлено и обновлено, файлы, хэши коммитов, статус push, напоминание о Git: Pull.
++Результат Preflight; сколько постов добавлено и обновлено; какие запросы применены, какие нет и почему; файлы; хэши коммитов; статус push (отправлен и подтверждён / остался локально / не подтверждён); при остановке — отчёт из раздела «Остановка»; напоминание о Git: Pull.
+ 
+ ## Ошибки и недоступные данные
+ - Нет доступа — сообщить, не делать вид, что сохранено.
+-- Push отклонён — pull и один повтор; конфликт — стоп.
+-- Файла нет — создать по формату без выдуманной истории.
++- Preflight не пройден — ни одной записи, коммита и push в этом запуске.
++- Файла нет — создать только если путь в allowlist, создание разрешено и пришёл запрос «создать отсутствующий файл»; по формату, без выдуманной истории. Иначе — не применено, сообщить.
+ 
+ ## Ограничения и что требует одобрения
+-- Перемещение, переименование, удаление файлов и смена структуры — только с одобрения.
++- Перемещение, переименование, удаление файлов и смена структуры (в том числе новая папка `Обучение/`) — только с одобрения.
+ - Не смешивать репозитории ботов.
+ - Деструктивные git-операции — только с явного согласия.
+--- live: /home/box/agent-data/workflows/mirraylina-learning-history-experiments/SKILL.md
++++ new-v2/mirraylina-learning-history-experiments.SKILL.md
+@@ -1,53 +1,82 @@
+ ---
+ name: Mirraylina — Learning History & Experiments
+ description: >-
+-  Only for the Mirraylina bot: use when it records observations, hypotheses,
+-  content experiments and conclusions, or checks past lessons before planning.
+-  Other bots must not run this copy.
++  Only for the Mirraylina bot: use when it reads its learning journal and
++  prepares proposed observations, hypotheses, content experiments, conclusions
++  and the run's skip status as change requests for Archive Management, or
++  checks past lessons before planning. Read-only. Other bots must not run this copy.
+ ---
+ # Learning History & Experiments — копия бота Mirraylina
+ 
+ Эта копия только для бота Mirraylina. Журнал ведётся в репозитории этого бота.
+ 
++Навык работает ТОЛЬКО НА ЧТЕНИЕ: не создаёт, не редактирует и не дописывает файлы и не выполняет git-команды, меняющие хранилище. Все записи он передаёт запросами изменений в Archive Management (этап 8), который один применяет их.
++
+ ## Условия применения
+-- После Analytics или Competitor Research, когда появилось наблюдение.
++- Вызов 1 — этап 3 Routine: после Analytics и Competitor Research, когда появилось наблюдение.
++- Вызов 2 — этап 6b Routine: после этапа 6, только статус запуска (пропуск или нет).
+ - Перед планированием контента — чтобы не повторять ошибки.
+ - Пользователь предлагает проверить идею.
+ 
+ ## Входные данные
+ 1. Профиль аккаунта: путь к журналу (по умолчанию `Обучение/Журнал наблюдений.md` и `Обучение/Эксперименты.md`).
+-2. Свежие результаты Analytics / Competitor Research.
+-3. Существующий журнал (прочитать перед записью).
+-
+-## Последовательность
+-1. Прочитать журнал; сохранить правки пользователя.
+-2. Записать наблюдение: дата, что видно, на каких данных.
++2. Вызов 1: свежие результаты Analytics / Competitor Research (этапы 1 и 2).
++3. Вызов 2: список ключей запросов вызова 1; выполнены ли этапы 1–2; итог этапа 4 (дни закрыты утверждёнными постами / объявленный перерыв); итог этапа 6 (выполнен или ошибка, сколько черновиков прошло проверку).
++4. Существующий журнал (прочитать перед подготовкой запросов).
++
++## Вызов 1 (этап 3)
++1. Прочитать журнал; учитывать правки пользователя (их не менять).
++2. Подготовить наблюдение: дата, что видно, на каких данных.
+ 3. Повторяющееся наблюдение — гипотеза (что, почему, как проверить, критерий успеха).
+ 4. Эксперимент — как предложение: что меняем, на сколько постов/дней, с чем сравниваем.
+ 5. Запуск — только после одобрения; статус «запущен» с датой.
+ 6. Итог: подтверждена / не подтверждена / недостаточно данных, с цифрами.
+ 7. Подтверждённый вывод — предложить как правило стратегии; в стратегию не вносить самой.
++8. Каждую запись оформить запросом изменения (контракт ниже, `этап-источник` = `3`) и вернуть список для Archive Management. Самой ничего не записывать. Статус пропуска в вызове 1 не готовить.
++
++## Вызов 2 (этап 6b)
++1. Только один вопрос: есть ли у этого запуска пропуск («разбор прошёл, а подходящего черновика нет»).
++2. Этапы 1–2 выполнены, этап 6 выполнен и ни один черновик не прошёл проверку — запрос `содержимое` «пропуск».
++3. Этапы 1–2 выполнены, этап 6 выполнен и хотя бы один черновик прошёл — запрос `содержимое` «черновик есть».
++4. Этап 6 завершился ошибкой или не передал итог, или этапы 1–2 не выполнены — запроса нет; в отчёт: «статус пропуска неизвестен» и причина. Пропуск не придумывать.
++5. День не требовал черновика (закрыт утверждёнными постами или объявлен перерыв) — запроса нет; в отчёт: «статус пропуска неизвестен: черновик не требовался» (как считать такие дни — открытый вопрос к пользовательнице).
++6. Не больше одного запроса: `путь` = `Обучение/Журнал наблюдений.md`, `операция` = `добавить запись`, `ключ-дубликата` = `skip:<YYYY-MM-DD>`, `этап-источник` = `6b`, `статус` = `обязательное`. Запись с этим ключом уже есть в журнале — запроса нет.
++7. Наблюдения, гипотезы и эксперименты вызова 1 не повторять и не менять.
++
++## Контракт запроса изменения (тот же, что в Archive Management)
++Ровно 8 полей:
++- `путь` — `Обучение/Журнал наблюдений.md` или `Обучение/Эксперименты.md`;
++- `операция` — `добавить запись` · `создать отсутствующий файл` (старые записи не переписываются: обновление — новая датированная строка);
++- `содержимое` — точная строка журнала: Дата | Тип | Описание | Данные | Статус; для `создать отсутствующий файл` — пустой шаблон (заголовок и шапка таблицы);
++- `дата` — `YYYY-MM-DD` по МСК;
++- `этап-источник` — `3` (вызов 1) · `6b` (вызов 2);
++- `основание` — на каких постах, цифрах, ссылках этапов 1–2 (для вызова 2 — итог этапа 6) основано;
++- `ключ-дубликата` — `obs:<YYYY-MM-DD>:<кратко>` · `hyp:<кратко>:<YYYY-MM-DD>` · `exp:<кратко>:<YYYY-MM-DD>` · `skip:<YYYY-MM-DD>` · `file:<путь>`;
++- `статус` — `обязательное` · `необязательное`.
++Значение `MANUAL` этот навык не использует.
+ 
+ ## Правила принятия решений
+ - Наблюдение ≠ вывод.
+ - Менять одну переменную за раз, если возможно.
+ - Внешние факторы (бан, праздник, перерыв) — помехи.
+-- Старые записи не переписывать, только добавлять обновления с датой.
++- Старые записи не переписывать, только предлагать обновления с датой.
+ 
+ ## Проверка результата
+-- У каждой записи дата и источник.
++- У каждого запроса все 8 полей по контракту.
+ - У гипотезы — критерий проверки.
+-- Нет выдуманных цифр.
++- Нет выдуманных цифр и выдуманных пропусков.
++- Ни одного файла навык не изменил.
+ 
+ ## Формат результата
+-Журнал: Дата | Тип | Описание | Данные | Статус.
+-Пользователю: 1–3 строки — что узнали, какой эксперимент предлагаю.
++Список запросов изменений для Archive Management (вызов 1 и вызов 2 — отдельно).
++Пользователю: 1–3 строки — что узнали, какой эксперимент предлагаю; статус пропуска или «статус пропуска неизвестен».
+ 
+ ## Ошибки и недоступные данные
+-- Журнала нет — создать пустой, без выдуманной истории.
++- Журнала нет — запрос `создать отсутствующий файл` с пустым шаблоном, без выдуманной истории; создаёт его Archive Management, только если создание разрешено.
+ - Данных мало — «недостаточно данных», эксперимент не закрывать.
+ 
+ ## Ограничения и что требует одобрения
+ - Запуск эксперимента и превращение вывода в правило — только с согласия пользователя.
+ - Не смешивать журналы разных ботов.
+ - Никаких действий на X.
++- Никаких записей в хранилище и git-команд, меняющих его.
+--- live: /home/box/agent-data/workflows/mirraylina-source-tracking/SKILL.md
++++ new-v2/mirraylina-source-tracking.SKILL.md
+@@ -1,32 +1,48 @@
+ ---
+ name: Mirraylina — Source Tracking
+ description: >-
+-  Only for the Mirraylina bot: use when it records which posts and notes were
+-  actually studied and which techniques were really used in drafts, in its own
+-  ledger. Other bots must not run this copy.
++  Only for the Mirraylina bot: use when it accounts for which posts and notes
++  were actually studied and which techniques were really used in drafts, by
++  reading its own ledger and preparing change requests for Archive Management.
++  Read-only. Other bots must not run this copy.
+ ---
+ # Source Tracking — копия бота Mirraylina
+ 
+ Эта копия только для бота Mirraylina. Журнал учёта — в репозитории этого бота, путь из профиля (по умолчанию `Посты/Учёт источников.md`).
+ 
++Навык работает ТОЛЬКО НА ЧТЕНИЕ: не создаёт, не редактирует и не дописывает файлы и не выполняет git-команды, меняющие хранилище. Запись запуска и пересчитанные итоги он передаёт запросами изменений в Archive Management (этап 8), который один применяет их.
++
+ ## Условия применения
+-- После Competitor Research и Content Engine в каждом разборе.
++- После Competitor Research и Content Engine в каждом разборе (этап 7 Routine).
+ - Вопрос «сколько раз использовали аккаунт X».
+ 
+ ## Входные данные
+-1. Текущий журнал (прочитать перед записью).
++1. Текущий журнал (прочитать перед подготовкой запросов).
+ 2. Реально прочитанные посты (ссылки).
+ 3. Реально открытые заметки (пути).
+ 4. Черновики и их источники.
+ 
+ ## Последовательность
+-1. Прочитать журнал, сохранить правки пользователя.
+-2. Датированная запись запуска с ТРЕМЯ мерами на аккаунт:
++1. Прочитать журнал; учитывать правки пользователя (их не менять).
++2. Подготовить датированную запись запуска с ТРЕМЯ мерами на аккаунт:
+    (a) изучение контента — прочитанные посты (ссылки);
+    (b) консультация заметок аккаунта — пути;
+    (c) реальное использование приёма — источник, приём, черновик и дата.
+ 3. Для каждого аккаунта — строка статуса, даже «нет новых / не изучен / недоступен».
+-4. Пересчитать итоги из лога.
++4. Пересчитать итоги из лога вместе с новой записью.
++5. Оформить запись запуска и новые итоги запросами изменений (контракт ниже) и вернуть список для Archive Management. Самой ничего не записывать.
++
++## Контракт запроса изменения (тот же, что в Archive Management)
++Ровно 8 полей:
++- `путь` — `Посты/Учёт источников.md`;
++- `операция` — `добавить запись` (лог запуска) · `обновить запись` (строка итогов аккаунта, поле «обновлено» во frontmatter);
++- `содержимое` — точный текст записи лога или строки итогов «Аккаунт | (a) | (b) | (c) | Последнее использование»; для `обновить запись` — `было: … / стало: …`;
++- `дата` — `YYYY-MM-DD` по МСК;
++- `этап-источник` — `7`;
++- `основание` — ссылки на прочитанные посты, пути заметок, черновик и приём;
++- `ключ-дубликата` — `ledger:<YYYY-MM-DD>:<@handle>` · `ledger-total:<@handle>` · `ledger-meta:обновлено`;
++- `статус` — `обязательное` · `необязательное`.
++Значение `MANUAL` этот навык не использует.
+ 
+ ## Правила принятия решений
+ - Одна сессия (a) или (b) на аккаунт за запуск.
+@@ -39,17 +55,21 @@
+ 
+ ## Проверка результата
+ - У каждой (c) есть источник и целевой черновик.
+-- Итоги совпадают с логом.
++- Итоги в запросах совпадают с логом плюс новой записью.
++- У каждого запроса все 8 полей по контракту.
++- Ни одного файла навык не изменил.
+ 
+ ## Формат результата
+-Журнал: лог по датам + Аккаунт | (a) | (b) | (c), с подписью «с даты начала учёта».
++Журнал (через Archive Management): лог по датам + Аккаунт | (a) | (b) | (c), с подписью «с даты начала учёта».
++Список запросов изменений для Archive Management.
+ Пользователю: строка охвата и использованные источники.
+ 
+ ## Ошибки и недоступные данные
+ - Источник не отследить — «неотслеживаемо».
+-- Не сохранилось — сообщить, не утверждать, что счёт обновлён.
++- Archive Management не применил запрос — сообщить, не утверждать, что счёт обновлён.
+ 
+ ## Ограничения и что требует одобрения
+ - Не смешивать журналы разных ботов.
+-- Исправление прошлых записей — только по просьбе пользователя.
++- Исправление прошлых записей — только по просьбе пользователя (через запрос `MANUAL`, который создаёт основной агент в чате, не этот навык).
+ - Источник счётчиков — журнал, не память.
++- Никаких записей в хранилище и git-команд, меняющих его.
+--- orig: dryrun-prompt.orig.txt
++++ v2: review/dryrun-prompt.txt
+@@ -1,18 +1,41 @@
+ ТЕСТ — разовый пробный прогон «Mirraylina — Daily Account Analysis 2.0». НЕ боевой запуск.
+ 
+-Ты — Mirraylina. Выполни один раз, вручную (не через Routine), все 9 этапов Routine 2.0 в том же порядке и с теми же условиями переходов, используя навыки mirraylina-*: rp-account-analytics → competitor-research → learning-history-experiments → контент-стратегия → content-engine → проверка качества и канона → source-tracking → archive-management → отчёт. Других навыков и данных других ботов не использовать.
++Ты — Mirraylina. Выполни один раз, вручную (не через Routine), этапы 0–9 Routine 2.0 (включая 6b) в том же порядке и с теми же условиями переходов, используя навыки mirraylina-*: Git Preflight (archive-management, «Preflight») → rp-account-analytics → competitor-research → learning-history-experiments, вызов 1 (только чтение, запросы) → контент-стратегия → content-engine → проверка качества и канона → learning-history-experiments, вызов 2 = этап 6b (статус пропуска) → source-tracking (только чтение, запросы) → archive-management («Запись», единственная запись) → отчёт. Других навыков и данных других ботов не использовать. Запросы с `этап-источник` = `MANUAL` в прогоне не создаются.
++
++Три понятия, которые нельзя путать в отчёте:
++- локальный HEAD — `git rev-parse HEAD`;
++- локальная remote-tracking ссылка — `git rev-parse refs/remotes/origin/main` (это НЕ состояние GitHub);
++- фактическая ветка на GitHub — `git ls-remote origin refs/heads/main` (сетевое чтение, только из песочницы).
+ 
+ ПЕСОЧНИЦА (переопределяет пути профиля):
+-- Хранилище для этого прогона: /workspace/dryrun/vault. Путь /workspace/vault-repo из профиля (раздел 3.8) в этом прогоне НЕ использовать: ни читать для записи, ни писать, ни делать там git-команды.
++- Хранилище для этого прогона: /workspace/dryrun/vault. Путь /workspace/vault-repo из профиля (раздел 3.8) в этом прогоне НЕ использовать: ни читать для записи, ни писать, ни делать там git-команды. Базовую линию настоящего хранилища (локальный HEAD, локальная remote-tracking ссылка, status) уже сохранил dryrun-setup.sh в /workspace/dryrun/REAL_BASE_HEAD, REAL_BASE_TRACKING, REAL_BASE_STATUS; сравнение после прогона делает `dryrun-setup.sh --verify`.
+ - Профиль: /workspace/dryrun/vault/Настройки/Профиль аккаунта.md (это черновик v2, положенный только в копию). Для теста считать его действующим, но в отчёте помнить, что он не утверждён.
+-- Перед стартом проверить: `git -C /workspace/dryrun/vault remote get-url --push origin` = no_push и есть .git/hooks/pre-push. Если нет — СТОП.
+-- Этап 0 (тестируем исправление проблемы №3): `git status` в песочнице чистый, затем `git pull --ff-only`. Если не получилось — записать и продолжить без pull.
++- Синхронизацию (`git pull --ff-only origin main`) уже выполнил dryrun-setup.sh — до черновика профиля и до тестового базового коммита; если она не удалась, скрипт остановился и прогон не начинается. Повторного pull в прогоне НЕТ.
++- Скрипт сохранил: /workspace/dryrun/BASE (локальный HEAD после базового коммита), SANDBOX_TRACKING_BASE (локальная remote-tracking ссылка после синхронизации), SANDBOX_REMOTE_BASE (фактическая ветка на GitHub по ls-remote после синхронизации).
+ 
+-ЗАПИСИ:
+-- Все записи файлов — только внутри /workspace/dryrun/vault. Отсутствующие файлы (Обучение/*, Посты/Перерывы.md, Посты/События.md) можно создать в песочнице, пометив в отчёте «создан в ТЕСТЕ».
+-- Локальные коммиты в песочнице разрешены, сообщения начинать с «ТЕСТ:».
+-- `git push` НЕ выполнять вообще. Вместо push записать в отчёт «push пропущен (ТЕСТ)» и что было бы отправлено (`git log --oneline origin/main..HEAD`).
+-- Никаких `--force`, `reset --hard`, удаления веток и файлов. При конфликте — `rebase --abort`, стоп, записать.
++ЭТАП 0 — Git Preflight (та же последовательность, что в боевом режиме, с поправками песочницы):
++1. Адреса remote: каждая строка `git -C /workspace/dryrun/vault remote get-url --all origin` точно (целиком, без подстрок) совпадает с одним из допустимых адресов навыка archive-management; каждая строка `git remote get-url --push --all origin` точно равна `no_push` (в песочнице push отключён намеренно); есть исполняемый .git/hooks/pre-push. Ошибка, пустой вывод или несовпадение — СТОП.
++2. `git rev-parse --show-toplevel` = /workspace/dryrun/vault; ветка `main`.
++3. `git status --porcelain` пустой. Не пустой — СТОП всего прогона, ничего не исправлять, не прятать, не удалять.
++4. Pull — не выполнять (сделан скриптом).
++5. Локальный HEAD = BASE; локальная remote-tracking ссылка = SANDBOX_TRACKING_BASE; `git rev-list --left-right --count HEAD...refs/remotes/origin/main` = `1 0` (ровно один тестовый базовый коммит).
++6. Фактическая ветка на GitHub: `git ls-remote origin refs/heads/main` — ровно одна строка, sha = SANDBOX_REMOTE_BASE. Ошибка ls-remote или другой sha — СТОП (состояние изменилось после подготовки; нужна новая подготовка).
++7. Базовый HEAD = BASE; базовый sha remote = SANDBOX_REMOTE_BASE. Записать оба в отчёт.
++Если любой пункт не пройден — прогон останавливается до этапа 1: никаких записей и коммитов; в отчёте — какой шаг и вывод git (учётные данные в URL замаскированы).
++
++ЭТАПЫ 1–7 (включая 6b): только чтение файлов и X; ни один этап не создаёт, не правит и не дописывает файлы в /workspace/dryrun/vault. Этапы 3, 6b и 7 возвращают запросы изменений по контракту из 8 полей (`путь`, `операция`, `содержимое`, `дата`, `этап-источник`, `основание`, `ключ-дубликата`, `статус`) и передают их этапу 8. Этап 6b получает: ключи запросов этапа 3, выполнены ли этапы 1–2, итог этапа 4 (дни закрыты / перерыв), итог этапа 6 (выполнен или ошибка, сколько черновиков прошло); готовит не больше одного запроса с ключом `skip:<дата>` или ничего и «статус пропуска неизвестен». Отчёт прогона (/workspace/dryrun/report/) — не хранилище, его писать можно.
++
++ЭТАП 8 — запись (та же последовательность, что в боевом режиме, навык archive-management, разделы «Запись», «Push», «Остановка»):
++- До первой записи: HEAD = BASE; `git status --porcelain` пустой; каждый `путь` точно в allowlist и `этап-источник` разрешён для этого пути.
++- Обучение/Журнал наблюдений.md и Обучение/Эксперименты.md (создание «только после подтверждения») в ТЕСТЕ считать подтверждёнными только для песочницы; созданное пометить в отчёте «создан в ТЕСТЕ (в боевом режиме нужно подтверждение)». Посты/Перерывы.md и Посты/События.md пишутся только запросами MANUAL — в прогоне их нет, эти файлы не трогать.
++- Читать файл прямо перед правкой; точечные правки; записи и форматирование пользовательницы сохранять; без дубликатов по `ключ-дубликата`; без удалений и перемещений; архив и индекс — только из данных этапа 1; запросы этапов 3, 6b, 7 — как есть, без додумывания.
++- `git status --porcelain --untracked-files=all` — только пути, изменённые этим этапом. `git add -- <путь>` по одному; НЕ `git add -A`, `git add .`, `git add -u`, `git commit -a`. Затем `git diff --cached --check`, `git diff --cached --name-status` (только A/M и пути из allowlist), полный `git diff --cached`.
++- Неожиданное — немедленный стоп по разделу «Остановка»: без коммита, без отката; не выполнять reset, restore, checkout, clean, stash; в отчёт — ветка, BASE и текущий HEAD, `git status --porcelain=v1 --untracked-files=all`, staged diff, unstaged diff, причина, «коммит не создан, push не выполнялся».
++- Изменений нет — коммит не создавать.
++- Один локальный коммит, сообщение начинается с «ТЕСТ:» (если в песочнице не задан автор — `git -c user.name=dryrun -c user.email=dryrun@localhost commit -m …`).
++- Push-часть боевого режима до самой отправки: повторить проверку адресов (fetch — допустимые, push — no_push); pre-push `git ls-remote origin refs/heads/main` записать и сравнить с SANDBOX_REMOTE_BASE (ошибка или другой sha — записать «в боевом режиме push не выполнялся бы»). Саму команду `git push` НЕ выполнять. Записать «push пропущен (ТЕСТ)» и что было бы отправлено: `git log --oneline "$(cat /workspace/dryrun/SANDBOX_REMOTE_BASE)"..HEAD`.
++- После коммита `git status --porcelain` должен быть пустым.
++- Никаких `--force`, `reset`, `restore`, `checkout`, `clean`, `stash`, `rebase`, `merge`, `pull`, `fetch`, удаления веток и файлов. Любой конфликт или неожиданность — стоп, записать.
+ - Вне /workspace/dryrun ничего не создавать и не менять (кроме чтения). Не менять Routine, навыки, память.
+ 
+ X:
+@@ -26,24 +49,30 @@
+ 
+ ОТЧЁТ:
+ Записать в /workspace/dryrun/report/ТЕСТ-отчёт.md (по-русски) и коротко повторить в чате. Заголовок: «ТЕСТ — пробный прогон, ничего не опубликовано и не отправлено».
+-1. По каждому этапу: статус (выполнен / пропущен «нет данных» / стоп), входы, выходы, время.
+-2. Счётчик X-чтений по этапам и итог.
+-3. Список файлов, которые прогон изменил или создал в песочнице.
+-4. Diff: `cd /workspace/dryrun/vault && git add -A && git diff --cached "$(cat /workspace/dryrun/BASE)"` → /workspace/dryrun/report/changes.diff; плюс `--stat`.
+-5. Подтверждение: `git -C /workspace/vault-repo status -sb` и HEAD настоящего хранилища не изменились (сравнить с HEAD до прогона).
+-6. Чек-лист PASS/FAIL:
+-   [ ] push не выполнялся; push url = no_push; hook на месте
+-   [ ] /workspace/vault-repo не изменён (HEAD и status те же)
++1. По каждому этапу 0–9 и 6b: статус (выполнен / пропущен «нет данных» / стоп), входы, выходы, время.
++2. Счётчик X-чтений по этапам и итог (ls-remote — не X-чтение, считать отдельно).
++3. Запросы изменений этапов 3, 6b и 7: какие применены на этапе 8, какие нет и почему; статус пропуска или «неизвестен» с причиной.
++4. Список файлов, которые этап 8 изменил или создал в песочнице; вывод `git diff --cached --check` и `--name-status` перед коммитом.
++5. Состояние до и после, раздельно: локальный HEAD (BASE → после этапа 8); локальная remote-tracking ссылка (SANDBOX_TRACKING_BASE, должна не измениться); фактическая ветка на GitHub (SANDBOX_REMOTE_BASE → результат ls-remote в --verify).
++6. После прогона выполнить `bash /workspace/drafts/review/dryrun-setup.sh --verify` и приложить вывод. Он проверяет: локальный HEAD, status и remote-tracking ссылку настоящего хранилища против базовой линии; push URL песочницы = no_push и hook; remote-tracking ссылку песочницы; фактическую ветку на GitHub через ls-remote (не тестовый коммит; изменение по другой причине — ВНИМАНИЕ для ручной проверки; ошибка ls-remote — FAIL «не подтверждено»); чистоту дерева песочницы; не больше одного коммита, только A/M и пути из allowlist; затем — ТОЛЬКО в песочнице — `git add -A` для отчётного diff.
++7. Чек-лист PASS/FAIL (каждый пункт — по фактической проверке, а не по тому, что команды завершились без ошибки):
++   [ ] push не выполнялся; все push URL = no_push; hook на месте
++   [ ] /workspace/vault-repo не изменён: локальный HEAD, status и remote-tracking ссылка совпадают с базовой линией (по выводу --verify)
++   [ ] ветка main на GitHub не указывает на тестовый коммит (ls-remote в --verify); если изменилась по другой причине — отмечено для ручной проверки
+    [ ] ни одного действия записи в X; X-чтений ≤ 60
+-   [ ] все 9 этапов в порядке; переходы соблюдены; при нехватке входов — «нет данных», а не выводы
++   [ ] этапы 0–9 и 6b в порядке; Preflight пройден до этапа 1 (точная проверка адресов, ls-remote); повторного pull не было; переходы соблюдены; при нехватке входов — «нет данных», а не выводы
++   [ ] этапы 1–7 и 6b не изменили ни одного файла хранилища; этапы 3, 6b и 7 передали запросы этапу 8; запросов MANUAL нет
++   [ ] все запросы — ровно 8 полей с допустимыми значениями
++   [ ] этап 8: проверки HEAD и чистоты до записи; только пути из allowlist; `git add` по путям; staged diff проверен; не больше одного коммита; дерево чистое после коммита; при остановке — ничего не откачено и отчёт полный
++   [ ] каждая запись в коммите есть в запросах этапов 3/6b/7 или в данных этапа 1; ничего не додумано; дубликатов нет
+    [ ] профиль прочитан; handle @Mirraylina и user id совпали; данных других ботов нет
+-   [ ] ростер — 11 аккаунтов из профиля; у каждого статус; охват «X из Y» честный
++   [ ] ростер — все аккаунты из профиля (в черновике v2 — 12); у каждого статус; охват «X из Y» честный
+    [ ] метрики только у постов < 7 дней; ER пересчитан из сырых чисел; медиана с размером выборки
+    [ ] проверка 7-дневного интервала выполнена с учётом перерывов
+-   [ ] пропуск определён верно (разбор был, черновика нет) и учтён
++   [ ] пропуск определён этапом 6b верно (разбор был, черновика нет) или честно «неизвестен»; не выдуман; без дубля по `skip:<дата>`
+    [ ] будущие события учтены, ничего не выдумано, участие не приписано
+    [ ] черновики: форма, похвала, канон, «не раскрывать», картинки — по профилю; повторов с последними ~10 постами нет
+    [ ] учёт источников: три меры, (c) только для реально использованных, не задним числом
+    [ ] архив: только новые оригиналы и цитаты; правки пользовательницы не затронуты
+    [ ] все недоступные источники и интеграции названы явно
+-   Итог: PASS, если все пункты отмечены; иначе FAIL со списком.
++   Итог: PASS, только если все пункты отмечены по фактическим проверкам и --verify завершился «Технические проверки: PASS»; иначе FAIL со списком.
+--- orig: dryrun-setup.orig.sh
++++ v2: review/dryrun-setup.sh
+@@ -1,26 +1,166 @@
+ #!/usr/bin/env bash
+-# ТЕСТ: подготовка песочницы для разового прогона Routine 2.0 Mirraylina.
+-# НЕ ЗАПУСКАТЬ без одобрения пользовательницы. Настоящий /workspace/vault-repo не меняется.
++# ТЕСТ: подготовка песочницы и проверки для разового прогона Routine 2.0 Mirraylina.
++# НЕ ЗАПУСКАТЬ без одобрения пользовательницы.
++# Настоящий /workspace/vault-repo не меняется: в нём только команды чтения
++# (status, rev-parse), без pull, fetch, add, commit и push.
++# Сетевые операции — ТОЛЬКО в песочнице и ТОЛЬКО когда пользовательница запустит скрипт:
++#   подготовка: git pull --ff-only origin main и git ls-remote (чтение GitHub);
++#   --verify:   git ls-remote (чтение GitHub). Push невозможен (no_push + pre-push hook).
++#
++# Три разных понятия (не путать):
++#   локальный HEAD                  — git rev-parse HEAD
++#   локальная remote-tracking ссылка — git rev-parse refs/remotes/origin/main (НЕ состояние GitHub)
++#   фактическая ветка на GitHub     — git ls-remote origin refs/heads/main (сетевое чтение)
++#
++# Использование:
++#   bash dryrun-setup.sh            # подготовка песочницы (до прогона)
++#   bash dryrun-setup.sh --verify   # проверки после прогона
+ set -euo pipefail
+ 
+ SRC=/workspace/vault-repo
+ ROOT=/workspace/dryrun
+ DRY=$ROOT/vault
+ PROFILE_DRAFT=/workspace/drafts/profile-akkaunta-draft.md
++BRANCH=main
++TRACKING=refs/remotes/origin/main
+ 
+-# 0. Предусловия: настоящее хранилище чистое, песочницы ещё нет, черновик профиля есть.
+-if [ -n "$(git -C "$SRC" status --porcelain)" ]; then
+-  echo "СТОП: в $SRC есть незакоммиченные изменения"; exit 1
++stop() { echo "СТОП: $*" >&2; exit 1; }
++mask() { sed -E 's#//[^/@]*@#//***@#'; }   # не печатать учётные данные из URL
++
++# Допустимые адреса: точное совпадение строки, без нормализации (кроме снятия \r).
++url_ok() {
++  case "$1" in
++    "https://github.com/Ernyskaliry/Mirraylina.git"|\
++    "https://github.com/Ernyskaliry/Mirraylina"|\
++    "git@github.com:Ernyskaliry/Mirraylina.git"|\
++    "ssh://git@github.com/Ernyskaliry/Mirraylina.git") return 0 ;;
++    *) return 1 ;;
++  esac
++}
++
++# Все fetch URL origin — каждый из списка допустимых.
++check_fetch_urls() {
++  local out u n=0
++  out=$(git -C "$1" remote get-url --all origin 2>&1) || stop "fetch URL origin не определить: $(printf '%s' "$out" | mask)"
++  [ -n "$out" ] || stop "fetch URL origin пуст"
++  while IFS= read -r u; do
++    u=${u%$'\r'}; n=$((n+1))
++    url_ok "$u" || stop "fetch URL №$n не из списка допустимых: $(printf '%s' "$u" | mask)"
++  done <<< "$out"
++  echo "fetch URL origin: $n шт., все из списка допустимых"
++}
++
++# Все push URL origin в песочнице — ровно no_push.
++check_push_urls_nopush() {
++  local out u n=0
++  out=$(git -C "$1" remote get-url --push --all origin 2>&1) || stop "push URL origin не определить: $(printf '%s' "$out" | mask)"
++  [ -n "$out" ] || stop "push URL origin пуст"
++  while IFS= read -r u; do
++    u=${u%$'\r'}; n=$((n+1))
++    [ "$u" = "no_push" ] || stop "push URL №$n в песочнице не no_push: $(printf '%s' "$u" | mask)"
++  done <<< "$out"
++  echo "push URL origin: $n шт., все = no_push"
++}
++
++# Фактический sha ветки main на GitHub (сетевое чтение). Ровно одна строка "<40 hex>\trefs/heads/main".
++remote_sha() {
++  local out
++  out=$(git -C "$1" ls-remote origin refs/heads/$BRANCH 2>/dev/null) || return 1
++  printf '%s\n' "$out" | grep -Eqx '[0-9a-f]{40}'$'\t''refs/heads/'"$BRANCH" || return 1
++  [ "$(printf '%s\n' "$out" | wc -l)" -eq 1 ] || return 1
++  printf '%s\n' "${out%%$'\t'*}"
++}
++
++real_status() { git -C "$SRC" status --porcelain=v1 -b --untracked-files=all; }
++
++if [ "${1:-}" = "--verify" ]; then
++  # ---------- Проверки после прогона ----------
++  fail=0
++  mkdir -p "$ROOT/report"
++  # 1. Настоящее хранилище (только локальные чтения).
++  if [ "$(git -C "$SRC" rev-parse HEAD)" = "$(cat "$ROOT/REAL_BASE_HEAD")" ]; then
++    echo "PASS: локальный HEAD настоящего хранилища не изменился"
++  else echo "FAIL: локальный HEAD настоящего хранилища изменился"; fail=1; fi
++  real_status > "$ROOT/report/real-status-after.txt"
++  if diff -u "$ROOT/REAL_BASE_STATUS" "$ROOT/report/real-status-after.txt"; then
++    echo "PASS: git status настоящего хранилища не изменился"
++  else echo "FAIL: git status настоящего хранилища изменился"; fail=1; fi
++  if [ "$(git -C "$SRC" rev-parse "$TRACKING")" = "$(cat "$ROOT/REAL_BASE_TRACKING")" ]; then
++    echo "PASS: локальная remote-tracking ссылка настоящего хранилища не изменилась (это не состояние GitHub)"
++  else echo "FAIL: локальная remote-tracking ссылка настоящего хранилища изменилась"; fail=1; fi
++  # 2. Защита от push в песочнице.
++  ( check_push_urls_nopush "$DRY" ) || fail=1
++  if [ -x "$DRY/.git/hooks/pre-push" ]; then echo "PASS: pre-push hook на месте"; else echo "FAIL: нет pre-push hook"; fail=1; fi
++  # 3. Локальная remote-tracking ссылка песочницы (НЕ GitHub).
++  if [ "$(git -C "$DRY" rev-parse "$TRACKING")" = "$(cat "$ROOT/SANDBOX_TRACKING_BASE")" ]; then
++    echo "PASS: локальная remote-tracking ссылка песочницы не изменилась (это не состояние GitHub)"
++  else echo "FAIL: локальная remote-tracking ссылка песочницы изменилась (в прогоне был fetch/pull?)"; fail=1; fi
++  # 4. Фактическая ветка на GitHub (сетевое чтение).
++  BASE=$(cat "$ROOT/BASE")
++  if now=$(remote_sha "$DRY"); then
++    echo "$now" > "$ROOT/report/github-main-after.txt"
++    if git -C "$DRY" rev-list "$BASE^..HEAD" | grep -qx "$now"; then
++      echo "FAIL: ветка main на GitHub указывает на тестовый коммит песочницы"; fail=1
++    elif [ "$now" = "$(cat "$ROOT/SANDBOX_REMOTE_BASE")" ]; then
++      echo "PASS: фактическая ветка main на GitHub не изменилась (ls-remote)"
++    else
++      echo "ВНИМАНИЕ: ветка main на GitHub изменилась за время теста, но не на тестовый коммит. Песочница push не делала; вероятно, это правка пользовательницы — проверить вручную."
++    fi
++  else
++    echo "FAIL: ls-remote не удался — состояние GitHub после теста не подтверждено"; fail=1
++  fi
++  # 5. Этап 8 оставил дерево песочницы чистым.
++  if [ -z "$(git -C "$DRY" status --porcelain --untracked-files=all)" ]; then
++    echo "PASS: дерево песочницы чистое после этапа 8"
++  else
++    echo "FAIL: в песочнице есть изменения вне коммита этапа 8 (возможна остановка этапа 8 — см. отчёт):"
++    git -C "$DRY" status --porcelain --untracked-files=all; fail=1
++  fi
++  # 6. Коммиты прогона: не больше одного, только пути из allowlist теста, только A/M.
++  git -C "$DRY" log --oneline "$BASE"..HEAD > "$ROOT/report/commits.txt"
++  n=$(wc -l < "$ROOT/report/commits.txt")
++  if [ "$n" -le 1 ]; then echo "PASS: коммитов прогона: $n"; else echo "FAIL: коммитов прогона $n (ожидался не больше одного)"; fail=1; fi
++  git -C "$DRY" -c core.quotepath=false diff --name-status "$BASE" HEAD > "$ROOT/report/commit-name-status.txt"
++  # Перерывы.md и События.md — только MANUAL; в прогоне Routine их нет, поэтому здесь они не разрешены.
++  bad=$(awk -F'\t' '
++    $1 !~ /^[AM]$/ { print; next }
++    $2 ~ /^Посты\/(Архив постов|Учёт источников|Гипноз|Лор|Юмор|Опросы и выбор|Femdom|Sub|Размышления|Коллабы|Праздники и события|Другое)\.md$/ { next }
++    $2 ~ /^Обучение\/(Журнал наблюдений|Эксперименты)\.md$/ { next }
++    { print }' "$ROOT/report/commit-name-status.txt")
++  if [ -z "$bad" ]; then echo "PASS: в коммите только пути из allowlist, только A/M"
++  else echo "FAIL: неожиданные пути или операции в коммите:"; echo "$bad"; fail=1; fi
++  # 7. Отчётный diff. git add -A — ТОЛЬКО здесь, в изолированной песочнице, никогда в $SRC.
++  [ "$(cd "$DRY" && git rev-parse --show-toplevel)" = "$DRY" ] || stop "не песочница"
++  ( cd "$DRY" && git add -A \
++      && git diff --cached "$BASE" > "$ROOT/report/changes.diff" \
++      && git diff --cached --stat "$BASE" > "$ROOT/report/changes.stat" )
++  [ -s "$ROOT/report/changes.diff" ] || echo "ВНИМАНИЕ: diff пуст — проверить, ожидаемо ли это"
++  echo "Отчётные файлы: $ROOT/report/"
++  if [ "$fail" -eq 0 ]; then
++    echo "Технические проверки: PASS (итог теста — только вместе с чек-листом содержания в ТЕСТ-отчёт.md)"
++  else
++    echo "Технические проверки: FAIL"; exit 1
++  fi
++  # Удаление песочницы — только с согласия: rm -rf /workspace/dryrun
++  exit 0
+ fi
+-[ -e "$DRY" ] && { echo "СТОП: $DRY уже существует — удалите вручную или выберите другой путь"; exit 1; }
+-[ -f "$PROFILE_DRAFT" ] || { echo "СТОП: нет $PROFILE_DRAFT"; exit 1; }
+ 
++# ---------- Подготовка (до прогона) ----------
++# 0. Предусловия.
++[ -e "$ROOT" ] && stop "$ROOT уже существует — удалите вручную или выберите другой путь"
++[ -f "$PROFILE_DRAFT" ] || stop "нет $PROFILE_DRAFT"
++[ -z "$(git -C "$SRC" status --porcelain)" ] || stop "в $SRC есть незакоммиченные изменения"
+ mkdir -p "$ROOT/report"
+ 
+-# 1. Полная независимая копия (не worktree: worktree делит .git с настоящим репо).
++# 1. Базовая линия НАСТОЯЩЕГО хранилища (только локальные чтения) — до начала теста.
++git -C "$SRC" rev-parse HEAD > "$ROOT/REAL_BASE_HEAD"
++git -C "$SRC" rev-parse "$TRACKING" > "$ROOT/REAL_BASE_TRACKING"
++real_status > "$ROOT/REAL_BASE_STATUS"
++
++# 2. Полная независимая копия (не worktree: worktree делит .git с настоящим репо).
+ cp -a "$SRC" "$DRY"
+ 
+-# 2. Отключить push двумя способами. Fetch с GitHub остаётся (только чтение).
++# 3. Отключить push двумя способами — до любых сетевых операций.
+ git -C "$DRY" remote set-url --push origin no_push
+ cat > "$DRY/.git/hooks/pre-push" <<'HOOK'
+ #!/bin/sh
+@@ -28,29 +168,36 @@
+ exit 1
+ HOOK
+ chmod +x "$DRY/.git/hooks/pre-push"
++check_push_urls_nopush "$DRY"
++
++# 4. Синхронизация песочницы — шаги Preflight, ДО черновика профиля и тестового базового коммита.
++[ "$(cd "$DRY" && git rev-parse --show-toplevel)" = "$DRY" ] || stop "корень песочницы не $DRY"
++check_fetch_urls "$DRY"
++[ "$(git -C "$DRY" branch --show-current)" = "$BRANCH" ] || stop "ветка не $BRANCH"
++[ -z "$(git -C "$DRY" status --porcelain)" ] || stop "песочница не чистая"
++git -C "$DRY" pull --ff-only origin "$BRANCH" || stop "git pull --ff-only в песочнице не удался — тест остановлен до записей"
++sha_head=$(git -C "$DRY" rev-parse HEAD)
++sha_tracking=$(git -C "$DRY" rev-parse "$TRACKING")
++sha_github=$(remote_sha "$DRY") || stop "ls-remote не удался — фактическое состояние GitHub не определено"
++[ "$sha_head" = "$sha_tracking" ] && [ "$sha_head" = "$sha_github" ] \
++  || stop "песочница не синхронна: HEAD=$sha_head, tracking=$sha_tracking, GitHub=$sha_github"
++echo "$sha_tracking" > "$ROOT/SANDBOX_TRACKING_BASE"   # локальная remote-tracking ссылка
++echo "$sha_github"   > "$ROOT/SANDBOX_REMOTE_BASE"     # фактическая ветка на GitHub (ls-remote)
+ 
+-# 3. Черновик профиля — только внутрь копии.
++# 5. Черновик профиля — только внутрь копии (после синхронизации). Повторного pull дальше нет.
+ mkdir -p "$DRY/Настройки"
+ cp "$PROFILE_DRAFT" "$DRY/Настройки/Профиль аккаунта.md"
+ 
+-# 4. Базовая линия, чтобы потом показать только изменения прогона.
+-git -C "$DRY" add "Настройки/Профиль аккаунта.md"
++# 6. Тестовая базовая линия.
++git -C "$DRY" add -- "Настройки/Профиль аккаунта.md"
+ git -C "$DRY" -c user.name="dryrun" -c user.email="dryrun@localhost" \
+   commit -q -m "ТЕСТ: базовая линия (черновик профиля в песочнице)"
+ git -C "$DRY" rev-parse HEAD > "$ROOT/BASE"
+ 
+-# 5. Проверки.
+-echo "push url: $(git -C "$DRY" remote get-url --push origin)"
+-echo "base: $(cat "$ROOT/BASE")"
+-echo "настоящий репо HEAD: $(git -C "$SRC" rev-parse --short HEAD), статус:"
+-git -C "$SRC" status -sb | head -1
+-echo "Готово. Песочница: $DRY"
+-
+-# --- После прогона (вручную) ---
+-# cd /workspace/dryrun/vault
+-# git add -A                                                     # только в песочнице: чтобы новые файлы попали в diff
+-# git diff --cached "$(cat /workspace/dryrun/BASE)" > /workspace/dryrun/report/changes.diff
+-# git diff --cached --stat "$(cat /workspace/dryrun/BASE)" > /workspace/dryrun/report/changes.stat
+-# git log --oneline "$(cat /workspace/dryrun/BASE)"..HEAD > /workspace/dryrun/report/commits.txt
+-# git -C /workspace/vault-repo status -sb                         # настоящее хранилище: должно быть без изменений
+-# Удаление песочницы — только с согласия: rm -rf /workspace/dryrun
++# 7. Итог подготовки.
++echo "base (локальный HEAD песочницы): $(cat "$ROOT/BASE")"
++echo "remote-tracking origin/main песочницы (локально): $(cat "$ROOT/SANDBOX_TRACKING_BASE")"
++echo "main на GitHub (ls-remote): $(cat "$ROOT/SANDBOX_REMOTE_BASE")"
++echo "настоящий репо: HEAD $(cat "$ROOT/REAL_BASE_HEAD"), tracking $(cat "$ROOT/REAL_BASE_TRACKING"), status:"
++cat "$ROOT/REAL_BASE_STATUS"
++echo "Готово. Песочница: $DRY. После прогона: bash $0 --verify"
+
+3.2 Предложение по README (НЕ применено), /workspace/drafts/review/README-line98.proposed.diff:
+
+--- README.md (текущий, строка 98)
++++ README.md (предложение)
+@@ -95,7 +95,7 @@
+ 
+ Изучение чужих скриптов: после разбора и согласования с пользовательницей алгоритма и адаптации сохранить в «Гипноз/Скрипты/» заметку-разбор своими словами, без полного текста скрипта; указать автора, флаги содержания, что берём и что не берём; поставить ссылку в «Гипноз/Гипноз — главная.md»; закоммитить и запушить. Полные PDF и полные тексты чужих скриптов в репозиторий не класть.
+ 
+-Git-порядок для хранилища: сначала git pull; правки пользовательницы не затирать; короткий коммит на русском; push; напомнить ей сделать в Obsidian «Git: Pull».
++Git-порядок для хранилища (Routine 2.0 и ручные записи): перед любой записью — Git Preflight навыка Archive Management (точная проверка адресов origin, ветка main, чистое дерево, `git pull --ff-only origin main`, сверка с `git ls-remote`; любая ошибка — стоп без записей). Пишет, коммитит и пушит только Archive Management: только разрешённые пути, `git add` по путям, один короткий коммит на русском, `git push origin HEAD:refs/heads/main` без force; при неожиданных изменениях — стоп без отката. Правки пользовательницы не затирать; напомнить ей сделать в Obsidian «Git: Pull».
+ 
+ # Картинки
+ 
+
+======================================================================
+4. ОБНОВЛЁННАЯ ПОСЛЕДОВАТЕЛЬНОСТЬ ROUTINE
+======================================================================
+0   Git Preflight — Archive Management, раздел «Preflight» (без правки файлов). Сбой → стоп до этапа 1, только отчёт.
+1   RP Account Analytics — только чтение.
+2   Competitor Research — только чтение. Перед ним из журнала читается число пропусков подряд (записи `skip:<дата>`).
+3   Learning History, вызов 1 — только чтение. Выход: запросы `этап-источник`=3 (наблюдения, гипотезы, эксперименты).
+4   Content Engine, планирование — только чтение.
+5   Content Engine, черновики — только чтение.
+6   Проверка качества и канона — только чтение.
+6b  Learning History, вызов 2 — только чтение. Выход: 0 или 1 запрос `этап-источник`=6b, ключ `skip:<дата>`.
+7   Source Tracking — только чтение. Выход: запросы `этап-источник`=7.
+8   Archive Management, разделы «Запись», «Push», «Остановка» — единственная запись, коммит и push. Стартует только после 3, 6b и 7.
+9   Отчёт.
+
+Данные между двумя вызовами Learning History:
+- Вызов 1 (этап 3) получает итоги этапов 1–2 и журнал. Отдаёт список запросов (3) и их ключи.
+- Вызов 2 (этап 6b) получает: ключи запросов вызова 1; признак «этапы 1–2 выполнены»; итог этапа 4 (дни закрыты утверждёнными постами / объявленный перерыв); итог этапа 6 («выполнен» или «ошибка», число черновиков, прошедших проверку); журнал (чтение, поиск `skip:<дата>`).
+- Решение вызова 2:
+  - 1–2 выполнены, 6 выполнен, прошло 0 черновиков → запрос «пропуск»;
+  - прошёл ≥1 черновик → запрос «черновик есть»;
+  - 6 не выполнен или не передал итог, или не выполнены 1–2 → запроса нет, «статус пропуска неизвестен»;
+  - день не требовал черновика → запроса нет, «неизвестен: черновик не требовался» (открытый вопрос);
+  - запись `skip:<дата>` уже есть → запроса нет.
+- Вызов 2 не повторяет наблюдения вызова 1. Оба списка этап 8 получает вместе и проверяет дубликаты по `ключ-дубликата`.
+
+======================================================================
+5. СХЕМА ЗАПРОСА ИЗМЕНЕНИЯ (8 ПОЛЕЙ) И ДОПУСТИМЫЕ ЗНАЧЕНИЯ
+======================================================================
+| Поле | Допустимые значения |
+|---|---|
+| `путь` | точная строка из allowlist: `Посты/Архив постов.md`; 10 тем `Посты/{Гипноз,Лор,Юмор,Опросы и выбор,Femdom,Sub,Размышления,Коллабы,Праздники и события,Другое}.md`; `Посты/Учёт источников.md`; `Обучение/Журнал наблюдений.md`; `Обучение/Эксперименты.md`; `Посты/Перерывы.md`; `Посты/События.md` |
+| `операция` | `добавить запись` · `обновить запись` · `создать отсутствующий файл` |
+| `содержимое` | точный текст; для обновления — `было: … / стало: …`; для создания — пустой шаблон без истории |
+| `дата` | `YYYY-MM-DD`, МСК |
+| `этап-источник` | `1` · `3` · `6b` · `7` · `MANUAL` |
+| `основание` | непустое; для MANUAL: `цитата: «…»; сообщение: <id или дата и время МСК>; канал: чат Grok Bot` |
+| `ключ-дубликата` | `post:<id>` · `index:Архив постов` · `ledger:<дата>:<@handle>` · `ledger-total:<@handle>` · `ledger-meta:обновлено` · `obs:<дата>:<кратко>` · `hyp:<кратко>:<дата>` · `exp:<кратко>:<дата>` · `skip:<дата>` · `break:<дата>` · `event:<название>:<год>` · `file:<путь>` |
+| `статус` | `обязательное` · `необязательное` |
+Какие источники разрешены для каких путей: `1` → архив и темы; `7` → Учёт источников; `3` → оба файла Обучение/; `6b` → только Журнал наблюдений; `MANUAL` → любой путь из allowlist, а для Перерывы.md и События.md — только MANUAL. У каждого файла один навык-источник, MANUAL — это сама пользовательница.
+Кто какие значения использует (по навыкам): Learning — `этап-источник` 3/6b, `операция` «добавить запись» и «создать отсутствующий файл»; Source — 7, «добавить запись» и «обновить запись»; Archive — 1 (сам оформляет из данных этапа 1); основной агент в чате — MANUAL. Имена полей во всех пяти текстах одинаковые (проверка 1: 8/8 в каждом).
+
+MANUAL:
+- Как попадает в Archive Management: создаёт его только основной агент в чате (не Routine), когда пользовательница прямо попросила конкретное изменение. Затем тот же Preflight, тот же раздел «Запись» и те же проверки allowlist, staged diff и push.
+- Как проверяется: в `основание` должны быть дословная цитата, ссылка на сообщение и канал; `содержимое` должно точно соответствовать цитате. Предположение или обсуждение — не указание: агент переспрашивает и запрос не создаёт.
+- Ограничение: Archive Management не может криптографически проверить подлинность цитаты. Проверка — это сверка формата и соответствия содержимого цитате (см. открытые вопросы).
+- В Routine: MANUAL не создаётся. Если такой запрос встретился в запуске Routine, он не применяется, о нём сообщается.
+
+======================================================================
+6. GIT PREFLIGHT И ARCHIVE MANAGEMENT
+======================================================================
+6.1 Допустимые адреса remote — точное равенство строк
+Разрешены ровно:
+  https://github.com/Ernyskaliry/Mirraylina.git
+  https://github.com/Ernyskaliry/Mirraylina
+  git@github.com:Ernyskaliry/Mirraylina.git
+  ssh://git@github.com/Ernyskaliry/Mirraylina.git
+- Нормализация: только снятие завершающего `\n` и `\r`. Регистр, `/` в конце, порт, логин, токен, query, fragment не нормализуются. Подстрока нигде не используется. В скрипте: `case "$1" in "<строка1>"|…) ;; esac`. В скрипте есть ещё один `grep -qx`, но он сравнивает целую строку sha коммита, а не адрес.
+- Fetch: `git remote get-url --all origin` — каждая строка вывода должна пройти проверку.
+- Push: `git remote get-url --push --all origin` — каждая строка должна пройти проверку. Git сам подставляет pushurl или url и применяет insteadOf/pushInsteadOf. В песочнице push-адреса должны быть ровно `no_push`, а fetch-адреса — по списку.
+- Несколько адресов: проверяется каждый; хотя бы один не прошёл — СТОП.
+- Неоднозначность: ошибка команды, пустой вывод или нет origin — СТОП с выводом команды (учётные данные замаскированы).
+- Адрес с учётными данными (`https://x-access-token:…@github.com/…`) в список не входит, поэтому СТОП. Это безопасный вариант; вопрос вынесен пользовательнице. В диагностике часть между `//` и `@` заменяется на `***`.
+- Известное из прошлой проверки (повторно не читалось): fetch-адрес настоящего хранилища — `https://github.com/Ernyskaliry/Mirraylina.git`, он проходит. Строки pushurl в увиденной части конфига не было, значит push-адрес совпадает с fetch-адресом. Это вывод из прежнего чтения, сейчас не проверялось.
+Примеры:
+  ПРОХОДИТ: https://github.com/Ernyskaliry/Mirraylina.git · https://github.com/Ernyskaliry/Mirraylina · git@github.com:Ernyskaliry/Mirraylina.git · ssh://git@github.com/Ernyskaliry/Mirraylina.git
+  СТОП: https://github.com/Ernyskaliry/Mirraylina-backup.git (другое имя) · https://github.com/ErnyskaliryX/Mirraylina.git (другой владелец) · https://github.com/Ernyskaliry/Mirraylina.git/extra (лишний путь) · https://github.com/Ernyskaliry/Mirraylina.git?ref=x (query) · https://gitlab.com/Ernyskaliry/Mirraylina.git (другой хост) · http://github.com/Ernyskaliry/Mirraylina.git (http) · https://github.com/ernyskaliry/mirraylina.git (регистр) · https://github.com/Ernyskaliry/Mirraylina/ (слэш в конце) · git@github.com:Ernyskaliry/Mirraylina (ssh без .git) · https://x-access-token:***@github.com/Ernyskaliry/Mirraylina.git (учётные данные) · пустой вывод · ошибка «No such remote 'origin'».
+  Примеры разобраны вручную по тексту `case`. Функция не запускалась.
+
+6.2 Preflight (этап 0)
+1) адреса fetch и push по 6.1; 2) `rev-parse --show-toplevel` = /workspace/vault-repo, ветка main; 3–4) `git status --porcelain` пустой, иначе СТОП без stash, reset, restore, checkout, clean, commit; 5–6) `git pull --ff-only origin main`, сбой → СТОП; 7) `git rev-parse HEAD` = `git rev-parse refs/remotes/origin/main` = sha из `git ls-remote origin refs/heads/main` (ровно одна строка `<40 hex>\trefs/heads/main`, иначе СТОП); 8) сохранить базовый HEAD и базовый sha remote (ls-remote).
+
+6.3 Запись (этап 8)
+Сначала проверки: HEAD = база, дерево чистое, ветка main, поля по контракту, путь в allowlist, источник допустим для пути. Затем точечные правки с чтением файла прямо перед правкой и дедупликацией по ключу, без удалений и перемещений. Потом `git status` (изменены только свои пути), `git add -- <путь>` по одному, `diff --cached --check`, `--name-status` (только A/M и allowlist), полный staged diff. Пустых коммитов нет; один коммит `git commit -m`.
+
+6.4 Push и неизменность remote
+1) Повторная проверка адресов по 6.1.
+2) Pre-push sha = `git ls-remote origin refs/heads/main`. Он должен быть ровно одной строкой формата `<40 hex>\trefs/heads/main` и совпадать с базовым sha из Preflight. Если не совпал (ветку на GitHub изменили за время запуска) или ls-remote не удался — push нет, коммит остаётся локально.
+3) `git push origin HEAD:refs/heads/main`.
+4) Успех: ls-remote = `git rev-parse HEAD`, дерево чистое. Если ls-remote не удался или sha другой — «push не подтверждён», ничего не исправляется.
+5) Отклонён: снова ls-remote.
+   - sha совпал с pre-push sha → не больше одного повтора;
+   - sha другой → повтора нет, стоп;
+   - ls-remote с ошибкой → стоп.
+   Без pull, rebase, merge и разрешения конфликтов, локальный коммит сохраняется, пользовательнице сообщается хэш и что коммит не отправлен.
+Как определяется «remote не изменился»: строка sha из ls-remote побайтно равна сохранённой (pre-push или базовой). Локальная ссылка origin/main для этого не используется.
+Ошибка ls-remote — всегда стоп: дальше без push и без повтора, коммит локально, причина в отчёте.
+
+======================================================================
+7. НЕОЖИДАННЫЙ STAGED DIFF
+======================================================================
+Поведение: немедленный стоп этапа 8. Коммит не создаётся, push не выполняется, ничего не откатывается. Не выполняются git reset, restore, checkout, clean, stash и другие команды, меняющие индекс или файлы. Всё остаётся как есть.
+Отчёт пользовательнице (только команды чтения):
+- ветка: `git branch --show-current`;
+- базовый HEAD (из Preflight) и текущий: `git rev-parse HEAD`;
+- изменённые, добавленные и удалённые файлы: `git status --porcelain=v1 --untracked-files=all`;
+- staged diff: `git diff --cached --name-status` и `git diff --cached`;
+- unstaged diff, если есть: `git diff --name-status` и `git diff`;
+- причина остановки;
+- «коммит не создан, push не выполнялся».
+Следующий Preflight остановится на грязном дереве (шаг 3–4), пока пользовательница не разберётся.
+Инструкция ей: посмотреть список файлов и сверить staged diff со списком запросов в отчёте; проверить, нет ли среди изменённых её собственных файлов. Решение за ней: например, проверить и закоммитить самой, отменить правки бота самой в своём Git-клиенте или Obsidian, или дать прямое указание. Способ автоматической очистки не предлагается.
+
+Почему изменения вне allowlist не попадут в коммит (статический разбор последовательности; не тестировалось):
+(а) Preflight пропускает только чистое дерево, поэтому чужих изменений и staged-файлов на старте нет.
+(б) Этапы 1–7 и 6b только читают; если они что-то изменили, шаг 1 «Записи» (дерево чистое) это поймает до записи.
+(в) Запрос с путём вне allowlist не применяется (шаг 2).
+(г) Перед staging шаг 9 сверяет `git status` со списком своих путей; любой другой путь — стоп.
+(д) `git add -- <путь>` только для явных путей из allowlist. Запрещены -A, ., -u, `commit -a` и pathspec-коммит.
+(е) После staging `--name-status`: каждая строка должна быть A или M с путём из allowlist, иначе стоп.
+(ж) `git commit -m` без -a коммитит только индекс, уже проверенный в (е).
+Остаточный риск: hooks pre-commit в настоящем хранилище могли бы менять индекс. Наличие hooks я не проверяла (.git не читала, это запрещено). Вынесено в открытые вопросы.
+
+======================================================================
+7a. README строка 98 и профиль §2.6 (НЕ редактировались)
+======================================================================
+Что и как прочитано: /workspace/vault-repo/README.md — обычное чтение файла (`sed -n 88,104p` и `cp` в /workspace/drafts/review/README.current-copy.md), без git-команд и без изменений. /workspace/drafts/profile-akkaunta-draft.md — `sed`/`rg`.
+- README, строка 98: «Git-порядок для хранилища: сначала git pull; правки пользовательницы не затирать; короткий коммит на русском; push; напомнить ей сделать в Obsidian «Git: Pull».»
+- Профиль-черновик §2.6 (строки 176–177): «Сначала pull; правки пользовательницы не затирать; короткий коммит на русском; push; напомнить сделать в Obsidian **Git: Pull**.» Профиль помечен «Это предварительный вариант. Пока пользовательница его не одобрит, навыки `mirraylina-*` не должны считать его утверждённым.»
+Противоречие: частичное. Порядок «сначала pull» совпадает с Preflight. Но обычный `git pull` может сделать merge или rebase (зависит от настроек), не задаёт стоп при ошибке и грязном дереве, не задаёт цель push и не проверяет remote. Это расходится с правилами --ff-only, «стоп без автоматического слияния» и `git push origin HEAD:refs/heads/main`.
+Статус:
+- README — действующий файл хранилища (закоммичен; в нём инструкции для бота, например строка 11 «После восстановления…»). Профиль ссылается на него как на источник старой конфигурации, то есть это действующая инструкция. Использует ли его старая Routine, я не проверяла: Routine не открывала.
+- Профиль §2.6 — часть неутверждённого черновика. Его изменение требует отдельного утверждения вместе с профилем.
+Предложение по README (НЕ применено): /workspace/drafts/review/README-line98.proposed.diff, текст ниже в разделе 3.
+Связанная находка: README, строка 96 («…поставить ссылку в «Гипноз/Гипноз — главная.md»; закоммитить и запушить») требует записи в `Гипноз/`, а этого пути нет в allowlist. Это открытый вопрос.
+
+======================================================================
+8. СТАТИЧЕСКАЯ ПРОВЕРКА СОГЛАСОВАННОСТИ — КОМАНДЫ И ВЫВОД
+======================================================================
+Скрипт: /workspace/drafts/fix/checks-v2.sh (рабочий каталог /workspace/drafts/fix/new-v2). exit=1 у rg означает «совпадений нет».
+Итоги:
+- Единый контракт — ДА: 8/8 имён полей в промпте, трёх навыках и dry-run; значения `этап-источник`/`операция` — подмножества общего списка (проверка 1). Формулировок контракта вне формата `этап-источник` нет.
+- Этапы промпта = фактические вызовы навыков: 0 Archive(Preflight), 1 Analytics, 2 Competitor, 3 Learning(вызов 1), 4–6 Content Engine, 6b Learning(«Вызов 2»), 7 Source, 8 Archive(«Запись»), 9 отчёт — ДА (проверка 2); названия разделов совпадают с заголовками навыков.
+- Git-записи вне Archive Management — НЕТ (проверка 3, exit=1, включая три неизменённых навыка).
+- Автоматическое разрешение конфликтов/откат — НЕТ: reset/restore/checkout/clean/stash встречаются только в запретах (проверка 4); «restore --staged» удалён.
+- Неявная цель push — НЕТ: единственная строка с `git push` без `origin HEAD:refs/heads/main` — запрет выполнять push в песочнице (dryrun-prompt.txt:36) (проверка 5).
+- pull --rebase — НЕТ; любой `git pull` только с --ff-only, в боевых текстах — `origin main` (проверка 6).
+- Подстрочная проверка remote — НЕТ (`grep -q`/REMOTE_EXPECTED отсутствуют; единственный `grep -qx` сравнивает целую строку sha); `rev-parse origin/main` нигде нет (проверка 7).
+- Стоп при ошибке Preflight — ДА во всех текстах (проверка 8).
+- Ранее согласованные ограничения — ДА: правила X/публикации, 7 дней, стратегия, расписание, итоговые тексты, строки 1–3 (разделение ботов) и Report format совпадают с действующим промптом; блок X и правила содержания dry-run совпадают с оригиналом; упоминаний Kiranea нет (проверка 9). «Не перезаписывать правки пользовательницы» — сохранено в промпте и навыке.
+- bash -n — SYNTAX_OK; копии review/ = new-v2 (проверка 10). Действующие навыки = fix/live (проверка 11).
+- Отсутствие сетевых и X-вызовов в моей работе — не проверяемо командой; утверждаю по журналу своих действий: использовались только локальные rg, diff, sed, cp, cmp, bash -n, python3 для записи файлов.
+
+--- вывод checks-v2.sh ---
+### 1. Единый контракт: 8 имён полей в каждом файле
+$ for f in routine-2.0-prompt.txt mirraylina-archive-management.SKILL.md mirraylina-learning-history-experiments.SKILL.md mirraylina-source-tracking.SKILL.md dryrun-prompt.txt; do n=0; for k in "\`путь\`" "\`операция\`" "\`содержимое\`" "\`дата\`" "\`этап-источник\`" "\`основание\`" "\`ключ-дубликата\`" "\`статус\`"; do rg -qF "$k" $f && n=$((n+1)); done; echo "$f: $n/8"; done
+routine-2.0-prompt.txt: 8/8
+mirraylina-archive-management.SKILL.md: 8/8
+mirraylina-learning-history-experiments.SKILL.md: 8/8
+mirraylina-source-tracking.SKILL.md: 8/8
+dryrun-prompt.txt: 8/8
+[exit=0]
+
+$ rg -n "этап-источник\` [—|=]|^\| \`этап-источник\`|^\| \`операция\`|^- \`операция\`|^- \`этап-источник\`" .
+./mirraylina-archive-management.SKILL.md:47:| `операция` | `добавить запись` · `обновить запись` · `создать отсутствующий файл` |
+./mirraylina-archive-management.SKILL.md:50:| `этап-источник` | `1` · `3` · `6b` · `7` · `MANUAL` |
+./mirraylina-archive-management.SKILL.md:64:| `путь` | Допустимые `этап-источник` | Создание, если файла нет |
+./mirraylina-source-tracking.SKILL.md:38:- `операция` — `добавить запись` (лог запуска) · `обновить запись` (строка итогов аккаунта, поле «обновлено» во frontmatter);
+./mirraylina-source-tracking.SKILL.md:41:- `этап-источник` — `7`;
+./dryrun-prompt.txt:3:Ты — Mirraylina. Выполни один раз, вручную (не через Routine), этапы 0–9 Routine 2.0 (включая 6b) в том же порядке и с теми же условиями переходов, используя навыки mirraylina-*: Git Preflight (archive-management, «Preflight») → rp-account-analytics → competitor-research → learning-history-experiments, вызов 1 (только чтение, запросы) → контент-стратегия → content-engine → проверка качества и канона → learning-history-experiments, вызов 2 = этап 6b (статус пропуска) → source-tracking (только чтение, запросы) → archive-management («Запись», единственная запись) → отчёт. Других навыков и данных других ботов не использовать. Запросы с `этап-источник` = `MANUAL` в прогоне не создаются.
+./mirraylina-learning-history-experiments.SKILL.md:35:8. Каждую запись оформить запросом изменения (контракт ниже, `этап-источник` = `3`) и вернуть список для Archive Management. Самой ничего не записывать. Статус пропуска в вызове 1 не готовить.
+./mirraylina-learning-history-experiments.SKILL.md:43:6. Не больше одного запроса: `путь` = `Обучение/Журнал наблюдений.md`, `операция` = `добавить запись`, `ключ-дубликата` = `skip:<YYYY-MM-DD>`, `этап-источник` = `6b`, `статус` = `обязательное`. Запись с этим ключом уже есть в журнале — запроса нет.
+./mirraylina-learning-history-experiments.SKILL.md:49:- `операция` — `добавить запись` · `создать отсутствующий файл` (старые записи не переписываются: обновление — новая датированная строка);
+./mirraylina-learning-history-experiments.SKILL.md:52:- `этап-источник` — `3` (вызов 1) · `6b` (вызов 2);
+[exit=0]
+
+$ rg -n "MANUAL" routine-2.0-prompt.txt mirraylina-learning-history-experiments.SKILL.md mirraylina-source-tracking.SKILL.md dryrun-prompt.txt
+routine-2.0-prompt.txt:19:Write ownership: after a successful Preflight, stages 1–7 (including 6b) only read files and produce results; they never create, edit or append files and never run git commands that change the repo. Stages 3, 6b and 7 hand their change requests to stage 8 and do not write them themselves. Every change request uses the contract defined in Archive Management, with exactly these 8 fields: `путь`, `операция`, `содержимое`, `дата`, `этап-источник`, `основание`, `ключ-дубликата`, `статус`. Allowed `этап-источник` values in this routine: `1`, `3`, `6b`, `7`. The value `MANUAL` is only for a change the user explicitly asked for in the chat; this routine never creates MANUAL requests and never treats a user message as permission for a write. Stage 8 applies only what it received (and post data from stage 1); it never invents record content.
+mirraylina-learning-history-experiments.SKILL.md:56:Значение `MANUAL` этот навык не использует.
+mirraylina-source-tracking.SKILL.md:45:Значение `MANUAL` этот навык не использует.
+mirraylina-source-tracking.SKILL.md:73:- Исправление прошлых записей — только по просьбе пользователя (через запрос `MANUAL`, который создаёт основной агент в чате, не этот навык).
+dryrun-prompt.txt:3:Ты — Mirraylina. Выполни один раз, вручную (не через Routine), этапы 0–9 Routine 2.0 (включая 6b) в том же порядке и с теми же условиями переходов, используя навыки mirraylina-*: Git Preflight (archive-management, «Preflight») → rp-account-analytics → competitor-research → learning-history-experiments, вызов 1 (только чтение, запросы) → контент-стратегия → content-engine → проверка качества и канона → learning-history-experiments, вызов 2 = этап 6b (статус пропуска) → source-tracking (только чтение, запросы) → archive-management («Запись», единственная запись) → отчёт. Других навыков и данных других ботов не использовать. Запросы с `этап-источник` = `MANUAL` в прогоне не создаются.
+dryrun-prompt.txt:30:- Обучение/Журнал наблюдений.md и Обучение/Эксперименты.md (создание «только после подтверждения») в ТЕСТЕ считать подтверждёнными только для песочницы; созданное пометить в отчёте «создан в ТЕСТЕ (в боевом режиме нужно подтверждение)». Посты/Перерывы.md и Посты/События.md пишутся только запросами MANUAL — в прогоне их нет, эти файлы не трогать.
+dryrun-prompt.txt:64:   [ ] этапы 1–7 и 6b не изменили ни одного файла хранилища; этапы 3, 6b и 7 передали запросы этапу 8; запросов MANUAL нет
+[exit=0]
+
+$ rg -n "этап-источник|stage.source|source stage" ../new-v2 | rg -v "\`этап-источник\`" 
+[exit=1]
+
+### 2. Порядок этапов в промпте и вызовы навыков
+$ rg -n "^[0-9]+b?\. " routine-2.0-prompt.txt
+6:0. Git Preflight — @Mirraylina — Archive Management, section «Preflight» only (no file edits). Runs before stage 1 and before any write. Follow the skill's Preflight steps exactly: exact remote check of every fetch and push URL of origin against the skill's URL allowlist; repo root /workspace/vault-repo; branch main; `git status --porcelain` empty; `git pull --ff-only origin main`; HEAD = origin/main (local remote-tracking ref) = `git ls-remote origin refs/heads/main` (actual remote branch); record base HEAD and base remote sha (from ls-remote).
+8:1. Own account analysis — @Mirraylina — RP Account Analytics.
+9:2. Competitor and trend research — @Mirraylina — Competitor Research.
+10:3. Learning history and experiments, call 1 — @Mirraylina — Learning History & Experiments, READ-ONLY: read past lessons, analyse stages 1–2, prepare change requests for today's observations and experiment status. Does not write.
+11:4. Content strategy for this run — @Mirraylina — Content Engine, planning part: which days are already covered by agreed posts, declared break days, which post type and technique fit the approved strategy now.
+12:5. Post drafts — @Mirraylina — Content Engine, drafting part.
+13:6. Quality and canon check — @Mirraylina — Content Engine checklist plus the profile's canon and post rules; fix or drop any draft that fails.
+14:6b. Learning history, call 2 (run status) — @Mirraylina — Learning History & Experiments, section «Вызов 2», READ-ONLY. Input: the stage-3 change list (keys only, to avoid duplicates), whether stages 1–2 actually ran, the stage-4 result (days already covered / declared break), and the stage-6 result: completed or failed, number of drafts that passed. Output: at most ONE change request with `ключ-дубликата` = `skip:<YYYY-MM-DD>` («пропуск» or «черновик есть»); it does not repeat any stage-3 observation. If stage 6 failed or did not provide its result, or the day needed no draft (covered by agreed posts or a declared break), no skip record is prepared and the report says «статус пропуска неизвестен» with the reason.
+15:7. Source accounting — @Mirraylina — Source Tracking, READ-ONLY: read the source ledger, prepare the run record and recounted totals as change requests. Does not write.
+16:8. Archive — @Mirraylina — Archive Management, section «Запись»: the ONLY stage that writes to the repo, commits and pushes. Stages 3, 6b and 7 have finished before it starts; it applies their change requests and archives/indexes posts from stage-1 data, then one commit and `git push origin HEAD:refs/heads/main`, in this bot's repo only.
+17:9. Short report to the user.
+[exit=0]
+
+### 3. Git-записи вне Archive Management
+$ rg -n "git (add|commit|push|pull|fetch|reset|restore|checkout|clean|stash|rebase|merge)" mirraylina-learning-history-experiments.SKILL.md mirraylina-source-tracking.SKILL.md ../live/mirraylina-content-engine.SKILL.md ../live/mirraylina-competitor-research.SKILL.md ../live/mirraylina-rp-account-analytics.SKILL.md
+[exit=1]
+
+### 4. Нет автоматического разрешения конфликтов и отката
+$ rg -n -i "restore --staged|git reset|git restore|git checkout|git clean|git stash|rebase --abort|reset --hard" .
+./mirraylina-archive-management.SKILL.md:115:- Сразу прекратить этап: без коммита, без push, без отката. Не выполнять `git reset`, `git restore`, `git checkout`, `git clean`, `git stash` и любые другие команды, меняющие индекс или файлы. Всё оставить как есть.
+[exit=0]
+
+$ rg -n -i "resolve|разрешени[ея] конфликт|разрешать" .
+./mirraylina-archive-management.SKILL.md:107:5. Push отклонён: без force, pull, rebase, merge и разрешения конфликтов. Снова `git ls-remote origin refs/heads/main`:
+./mirraylina-archive-management.SKILL.md:121:- Конфликты не разрешать ни в свою пользу, ни автоматически; историю не переписывать; ничего не откатывать автоматически.
+./routine-2.0-prompt.txt:39:- Git safety: one sync per run, only in stage 0 (`git pull --ff-only origin main`; never `--rebase`, never a plain merge pull); the only writes, commit and push are in stage 8, and the only push form is `git push origin HEAD:refs/heads/main`; never force-push, reset, restore, checkout, clean, stash, rebase, merge, delete branches or files, or resolve conflicts in my favour; never overwrite the user's edits; never roll anything back automatically. On a dirty tree, failed sync, unexpected staged diff, conflict, rejected push with a changed remote or an ls-remote error: stop and report.
+[exit=0]
+
+### 5. Неявная цель push: строки с 'git push' без 'origin HEAD:refs/heads/main'
+$ rg -n "git push" . | rg -v "origin HEAD:refs/heads/main"
+./dryrun-prompt.txt:36:- Push-часть боевого режима до самой отправки: повторить проверку адресов (fetch — допустимые, push — no_push); pre-push `git ls-remote origin refs/heads/main` записать и сравнить с SANDBOX_REMOTE_BASE (ошибка или другой sha — записать «в боевом режиме push не выполнялся бы»). Саму команду `git push` НЕ выполнять. Записать «push пропущен (ТЕСТ)» и что было бы отправлено: `git log --oneline "$(cat /workspace/dryrun/SANDBOX_REMOTE_BASE)"..HEAD`.
+[exit=0]
+
+### 6. Нет pull --rebase и обычного pull без --ff-only
+$ rg -n "pull --rebase" .
+[exit=1]
+
+$ rg -n "git pull" . | rg -v "pull --ff-only"
+[exit=1]
+
+$ rg -n -o "pull --ff-only[^\`;)\"]*" . | sort | uniq -c
+      1 ./dryrun-prompt.txt:13:pull --ff-only origin main
+      1 ./dryrun-setup.sh:178:pull --ff-only origin 
+      1 ./dryrun-setup.sh:178:pull --ff-only в песочнице не удался — тест остановлен до записей
+      1 ./dryrun-setup.sh:7:pull --ff-only origin main и git ls-remote (чтение GitHub
+      1 ./mirraylina-archive-management.SKILL.md:6:pull --ff-only, applying change requests from other
+      1 ./mirraylina-archive-management.SKILL.md:80:pull --ff-only origin main
+      1 ./routine-2.0-prompt.txt:39:pull --ff-only origin main
+      1 ./routine-2.0-prompt.txt:6:pull --ff-only origin main
+[exit=0]
+
+### 7. Точная проверка remote: нет grep подстроки, нет rev-parse origin/main как «состояния GitHub»
+$ rg -n "grep -q|REMOTE_EXPECTED" dryrun-setup.sh
+102:    if git -C "$DRY" rev-list "$BASE^..HEAD" | grep -qx "$now"; then
+[exit=0]
+
+$ rg -n "rev-parse origin/main|rev-parse origin/\\\$BRANCH" .
+[exit=1]
+
+$ rg -n "get-url --all origin|get-url --push --all origin|ls-remote origin refs/heads/main" . | wc -l
+15
+[exit=0]
+
+### 8. Остановка при ошибках Preflight
+$ rg -n "СТОП всего|stages 1–8 do not run|прогон останавливается до этапа 1|Preflight не пройден|failed Git Preflight" .
+./mirraylina-archive-management.SKILL.md:79:4. Не пустой (в том числе после остановленного прошлого этапа 8) — СТОП всего запуска. Не исправлять, не делать stash, reset, restore, checkout, clean, commit или удаление; сообщить, какие файлы изменены, и что решение за пользовательницей.
+./mirraylina-archive-management.SKILL.md:81:6. Не получилось — СТОП всего запуска до любых изменений; сообщить вывод git.
+./mirraylina-archive-management.SKILL.md:136:- Preflight не пройден — ни одной записи, коммита и push в этом запуске.
+./dryrun-prompt.txt:19:3. `git status --porcelain` пустой. Не пустой — СТОП всего прогона, ничего не исправлять, не прятать, не удалять.
+./dryrun-prompt.txt:24:Если любой пункт не пройден — прогон останавливается до этапа 1: никаких записей и коммитов; в отчёте — какой шаг и вывод git (учётные данные в URL замаскированы).
+./routine-2.0-prompt.txt:7:   If any Preflight step fails or cannot be determined unambiguously (empty output, command error, network error), the run ends here: stages 1–8 do not run, no file writes, no commits, no pushes. Still send the user a short report with the failed step and the diagnostics (credentials in URLs masked).
+./routine-2.0-prompt.txt:30:Dependencies: a stage that needs another stage's data runs only if that data was actually obtained. If a stage fails or a source/integration is unavailable (X reads, rate limits, git, a missing file), say so explicitly in the report, mark the dependent conclusions as not made, and continue only with stages that don't depend on it. Exception: a failed Git Preflight (stage 0) stops the whole run before stage 1, and a failed check in stage 8 means no write, commit or push. Never invent metrics, trends, sources or results.
+./routine-2.0-prompt.txt:44:Deliver the report to the user in this Grok Bot chat. If there is genuinely nothing new and no draft is needed, stay quiet; a failed Git Preflight, a stage-8 stop or a commit that stayed local is always reported.
+[exit=0]
+
+### 9. Ограничения X, 7 дней, разделение ботов, стратегия — без изменений относительно действующего промпта
+$ diff <(rg "^- (Never post|Posting gap|Substantial|Experimental|Do not change|Final agreed)" ../live/routine-2.0-prompt.live.txt) <(rg "^- (Never post|Posting gap|Substantial|Experimental|Do not change|Final agreed)" routine-2.0-prompt.txt)
+[exit=0]
+
+$ diff <(sed -n 1,3p ../live/routine-2.0-prompt.live.txt) <(sed -n 1,3p routine-2.0-prompt.txt)
+[exit=0]
+
+$ diff <(rg "^Report format" ../live/routine-2.0-prompt.live.txt) <(rg "^Report format" routine-2.0-prompt.txt)
+[exit=0]
+
+$ diff <(sed -n "/^X:/,/^ОТЧЁТ/p" ../live/dryrun-prompt.orig.txt) <(sed -n "/^X:/,/^ОТЧЁТ/p" dryrun-prompt.txt)
+[exit=0]
+
+$ rg -n -i "kiranea" . ../live/routine-2.0-prompt.live.txt
+[exit=1]
+
+### 10. Синтаксис и копии
+$ bash -n dryrun-setup.sh && echo SYNTAX_OK
+SYNTAX_OK
+[exit=0]
+
+$ cmp dryrun-setup.sh /workspace/drafts/review/dryrun-setup.sh && cmp dryrun-prompt.txt /workspace/drafts/review/dryrun-prompt.txt && echo COPIES_IDENTICAL
+COPIES_IDENTICAL
+[exit=0]
+
+### 11. Действующие навыки не изменены
+$ for f in ../live/mirraylina-*.SKILL.md; do b=$(basename $f .SKILL.md); cmp -s $f /home/box/agent-data/workflows/$b/SKILL.md && echo "$b: live = копия fix/live" || echo "$b: ОТЛИЧАЕТСЯ"; done
+mirraylina-archive-management: live = копия fix/live
+mirraylina-competitor-research: live = копия fix/live
+mirraylina-content-engine: live = копия fix/live
+mirraylina-learning-history-experiments: live = копия fix/live
+mirraylina-rp-account-analytics: live = копия fix/live
+mirraylina-source-tracking: live = копия fix/live
+[exit=0]
+
+
+======================================================================
+9. ОСТАВШИЕСЯ ПРОБЛЕМЫ И ОТКРЫТЫЕ ВОПРОСЫ
+======================================================================
+Решения пользовательницы (я их не принимала):
+1. Адреса с учётными данными (`https://<токен>@github.com/Ernyskaliry/Mirraylina.git`) сейчас вызывают СТОП. Разрешать ли их по маске «логин/токен + точный адрес»? Безопаснее — нет: хранить токен через credential helper.
+2. Нужны ли ещё формы адреса: `/` в конце, ssh без `.git`, `ssh://…` без `.git`? Сейчас они дают СТОП.
+3. Дни, когда черновик не требовался (дни закрыты утверждёнными постами или объявлен перерыв): считать пропуском, «не пропуском» или не учитывать? Сейчас запись не делается, в отчёте «неизвестен».
+4. Ручные записи ВНЕ allowlist: README, профиль, канон, `Отношения/`, `Гипноз/Скрипты/` и `Гипноз/Гипноз — главная.md` (README, строка 96), правки ростера вроде добавления Terra. По новой архитектуре Archive Management их не пишет. Нужно выбрать: расширить allowlist для MANUAL по конкретным путям или оставить для таких правок отдельный порядок с её явным разрешением.
+5. Считать ли MANUAL-указание «создай файл X» подтверждением создания `Обучение/*`, `Посты/Перерывы.md` и `Посты/События.md`, или подтверждение даётся только правкой allowlist?
+6. Подлинность MANUAL проверяется только по формату: дословная цитата, ссылка на сообщение и соответствие содержимого цитате. Достаточно ли этого?
+7. Если ветка на GitHub изменилась во время запуска (pre-push sha ≠ базовому), сейчас push не выполняется. Строже, чем «один повтор»; подтвердить.
+8. В каждом боевом запуске будет 2–4 сетевых чтения ls-remote: в Preflight, перед push и после push, плюс одно при отклонении. Подтвердить, что это допустимо.
+9. Dry-run: если ветка на GitHub изменилась во время теста не на тестовый коммит, сейчас это «ВНИМАНИЕ» для ручной проверки, а не FAIL. Подтвердить.
+10. Pull теперь с явной целью `origin main` (в v1 был `git pull --ff-only`). Подтвердить.
+Технические ограничения, которые я не проверяла:
+11. Hooks в настоящем хранилище (pre-commit и др.) могут менять индекс между проверкой и коммитом. Не проверено: .git не читала.
+12. Глобальная или системная конфигурация git (insteadOf, pushurl вне репозитория) мной не читалась. Проверка `get-url --all` учитывает её при выполнении.
+13. Скрипт и функции не запускались: формат вывода ls-remote, поведение `get-url --push --all` при `no_push` и работа heredoc проверены только чтением и `bash -n`.
+Наследованные из v1 (не решены):
+14. Профиль `Настройки/Профиль аккаунта.md` в хранилище отсутствует; Routine остановится на нём.
+15. README, строка 98 — предложение готово, не применено. Профиль §2.6 — правится только вместе с утверждением профиля.
+16. Папки `Обучение/` нет; `Посты/Перерывы.md` и `Посты/События.md` нет. Пока они не созданы, учёт пропусков (6b) и запись перерывов не сработают.
+17. Запись учёта источников за 14 ноя ждёт её «да» (это мог бы быть MANUAL).
+18. Пункты review.md, не связанные с Git (поле «утверждённая стратегия», план отложенных постов, заметки ростера), не закрыты.
+
+======================================================================
+10. ДЕЙСТВИЯ, ДЛЯ КОТОРЫХ НУЖНО ЕЁ РАЗРЕШЕНИЕ
+======================================================================
+1. Применить 3 навыка из /workspace/drafts/fix/new-v2/ к /home/box/agent-data/workflows/mirraylina-{archive-management,learning-history-experiments,source-tracking}/SKILL.md.
+2. Заменить промпт Routine mirraylina-daily-account-analysis-2-0 на /workspace/drafts/fix/new-v2/routine-2.0-prompt.txt.
+3. Включить Routine 2.0 (сейчас выключена). Старую Routine тоже не трогать без её слова.
+4. Сохранить профиль `Настройки/Профиль аккаунта.md` в хранилище и решить строку §2.6 (и строку Locktober).
+5. Создать `Обучение/Журнал наблюдений.md` и `Обучение/Эксперименты.md` (новая папка).
+6. Создать `Посты/Перерывы.md` и записать перерывы 15–16 ноя.
+7. Создать `Посты/События.md`.
+8. Применить предложение по README, строка 98 (коммит и push в её репозиторий).
+9. Решить вопрос про README, строка 96, и ручные записи вне allowlist (вопрос 4).
+10. Запустить dry-run: `bash /workspace/drafts/review/dryrun-setup.sh`. Будет копия хранилища, git-чтения в настоящем хранилище (status, rev-parse), сетевые `git pull --ff-only origin main` и `git ls-remote` в песочнице, до 60 X-чтений. Затем `--verify` (снова ls-remote). Удалить /workspace/dryrun после теста — отдельно.
+11. Сетевые ls-remote в каждом боевом запуске (вопрос 8).
+12. Запись учёта источников за 14 ноя.
+
+======================================================================
+СТАТУС
+======================================================================
+- Ничего не применено: действующие навыки /home/box/agent-data/workflows/* не изменены (cmp с копиями fix/live совпадает — проверка 11).
+- Routine не открывалась, не менялась, не включалась и не запускалась.
+- Dry-run, dryrun-setup.sh и отдельные этапы не запускались; скрипт проверен только `bash -n`. Утверждений «протестировано» или «работает» нет.
+- X не читался; сетевых операций и операций с GitHub не было.
+- В /workspace/vault-repo не выполнялось ни одной git-команды. Файлы не создавались и не менялись. В этом раунде README.md прочитан как обычный файл (`sed -n 88,104p` и `cp` в drafts); .git/config повторно не читался.
+- Файлы не удалялись. Изменены только черновики в /workspace/drafts/review/ (dryrun-prompt.txt, dryrun-setup.sh) и рабочие файлы в /workspace/drafts/fix/.
+
+======================================================================
+ПРИМЕНЕНИЕ
+======================================================================
+Не применено. Режим Proposal Only: действующие навыки, промпт Routine 2.0 и хранилище не изменены, Routine выключена. Применение возможно только после отдельного разрешения пользовательницы.
