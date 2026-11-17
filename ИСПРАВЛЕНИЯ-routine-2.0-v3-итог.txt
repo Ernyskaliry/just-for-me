@@ -1,0 +1,648 @@
+ИСПРАВЛЕНИЯ Routine 2.0 — итоговая проверка первого пакета (v3), только предложения
+Подготовлено 17 ноя 2026, около 15:40 МСК. Ничего не применено, ничего не запускалось и не тестировалось.
+
+Файлы v3: /workspace/drafts/review/v3/
+- routine-2.0-prompt.txt — изменён (v2→v3)
+- mirraylina-archive-management.SKILL.md — изменён
+- dryrun-prompt.txt, dryrun-setup.sh — изменены; копии лежат в /workspace/drafts/review/
+- mirraylina-learning-history-experiments.SKILL.md, mirraylina-source-tracking.SKILL.md — без изменений, копии v2 (проверено cmp)
+Проверки: /workspace/drafts/review/checks-v3.sh, вывод — /workspace/drafts/review/checks-v3.out (целиком в разделе 4).
+
+Что прочитано в /workspace/vault-repo (только обычное чтение файлов, без git, без изменений):
+- `ls -laR Гипноз/`;
+- `cat "Гипноз/Гипноз — главная.md"`;
+- `sed -n 1,30p` и `rg` по `Гипноз/Техники/Безопасность и согласие.md`;
+- `cat "Гипноз/Шаблон источника.md"`;
+- `sed -n 1,40p` и `rg -n "^#"` по `Гипноз/Скрипты/Induction (Ravenella1).md`;
+- `rg` по `Гипноз/Для постов/Приёмы для постов.md`.
+Кроме того: черновики /workspace/drafts/fix/live/, /workspace/drafts/fix/new-v2/, /workspace/drafts/profile-akkaunta-draft.md, /workspace/drafts/review/README.current-copy.md.
+
+======================================================================
+1. НАЗНАЧЕНИЕ ПАПКИ Гипноз/
+======================================================================
+Назначение. Изучение гипноза по книгам и скриптам, которые присылает пользовательница, ради живых и технически правдоподобных постов и развития личности Mirraylina. Рамка папки: фикция, RP и добровольный эротический гипноз между взрослыми («Гипноз — главная», «Рамка раздела»).
+
+Что лежит в папке (ls -laR):
+- `Гипноз/Гипноз — главная.md` — оглавление, таблица «Источники», списки «Скрипты» и «Свои скрипты», порядок «Как добавить новую книгу или скрипт», поле `обновлено`;
+- `Гипноз/Шаблон источника.md` — шаблон конспекта;
+- `Гипноз/Источники/` — 3 конспекта (Jacquin, Wiseman, Your Induction Sucks);
+- `Гипноз/Техники/` — 6 сводных заметок: Индукции, Углубление, Внушения и триггеры, Языковые паттерны, Пробуждение, Безопасность и согласие;
+- `Гипноз/Для постов/Приёмы для постов.md` — как превратить технику в пост;
+- `Гипноз/Скрипты/` — 6 разборов чужих скриптов. Разделы разбора: Структура, Полезные приёмы, Безопасность и согласие (оценка), Согласованная адаптация (с датой);
+- `Гипноз/Свои скрипты/` — пусто, есть только `.gitkeep`.
+
+Кто читает папку:
+- Content Engine при гипноз-черновике. Правило профиля, строка 193: сначала прочитать `Приёмы для постов.md`, `Техники/` и новые источники.
+- Основной агент в чате при изучении и разборе скриптов.
+- Остальные навыки Routine (Analytics, Competitor, Learning, Source) папку не используют. Live-копии и v2/v3 ссылок на `Гипноз/` не содержат, кроме нового раздела Archive Management.
+
+Операции с существующими материалами:
+- Чтение — свободно, в Routine и в чате.
+- Изменение — по порядку из главной заметки: дописать новые техники в `Техники/` со ссылкой на источник (шаг 3), дописать приёмы в `Для постов/` (шаг 4), добавить строку и ссылку в главную и обновить `обновлено` (шаг 5). Это только добавление в конец разделов, без переписывания существующего текста.
+- Удаление, перемещение, переименование — не предусмотрены нигде; запрещены.
+
+Новые материалы:
+- разбор чужого скрипта → `Гипноз/Скрипты/<Название> (<Автор>).md` (README, строка 96; профиль §2.5);
+- конспект нового источника → `Гипноз/Источники/<Название> (<Автор>).md` по шаблону (главная, шаг 1);
+- свой скрипт → `Гипноз/Свои скрипты/<Название>.md`. Отдельного правила в материалах нет; предложено ниже, требует решения пользовательницы.
+
+Где хранятся результаты анализа: разборы скриптов — в `Скрипты/`, конспекты — в `Источники/`, обобщения — в `Техники/`, прикладные приёмы — в `Для постов/`. Согласованная адаптация записывается в сам разбор, раздел «Согласованная адаптация для Mirraylina (дата)».
+
+Разработка новых скриптов (предложение, сейчас в материалах не описано):
+1) идея и структура обсуждаются с пользовательницей;
+2) текст проверяется по фильтру ниже;
+3) после её явного одобрения основной агент создаёт запрос MANUAL «создать отсутствующий файл» в `Свои скрипты/` и запрос «добавить запись» со ссылкой в главную;
+4) Archive Management применяет запросы по общей последовательности (Preflight, проверки, hooks, push).
+
+Ограничения безопасности и фильтр содержания (источники: «Рамка раздела», «Безопасность и согласие» — «Игра ≠ терапия», профиль, строки 75 и 193, README, строки 79–80 и 96, главная — «Подсказка по тегам»):
+- только фикция, RP и добровольный гипноз между взрослыми; рамка и претолк в начале;
+- ничего, что указывает на несовершеннолетних;
+- никаких клинических и терапевтических обещаний; ролевую фантазию отделять от клинических заявлений;
+- никаких инструкций для скрытого влияния без согласия и для реального вреда;
+- полный текст чужих скриптов и PDF не хранить: структура своими словами, цитаты до 1–2 предложений, автор указан;
+- пропускаем инцест, наказание или месть против воли, реальное насилие по сюжету;
+- для постов не берём амнезию, постоянные триггеры, принуждение, обязательное перечитывание, отчёты, личные сообщения и «полный контроль разума». В разборах такие места помечаются только как «не берём»;
+- амнезия не входит в канон (решение 16 ноя).
+Кто фильтрует: основной агент перед созданием запроса пишет в `основание` строку `проверка содержания: пройдена`; без неё Archive Management запрос не применяет. Archive Management проверяет наличие подтверждения, а не смысл текста (см. раздел 6).
+
+Нужно отдельное подтверждение пользовательницы:
+- согласование выводов перед сохранением разбора;
+- одобрение текста своего скрипта;
+- любая правка существующего текста в `Гипноз/` (не дописывание);
+- изменение правил в «Безопасность и согласие» по смыслу (дописывание туда тоже только по MANUAL);
+- изменение шаблона;
+- новые подпапки;
+- удаление, перемещение, переименование;
+- перенос приёма в стратегию постов.
+
+======================================================================
+2. ALLOWLIST: ПУТИ И ОПЕРАЦИИ
+======================================================================
+Рекурсивного `Гипноз/**` нет. Этапы Routine 0–9 в `Гипноз/` только читают; источник записи здесь — только `MANUAL`.
+| Путь | Назначение | Чтение | Создание | Изменение | Удаление/перемещение | Источник | name-status |
+|---|---|---|---|---|---|---|---|
+| `Гипноз/Скрипты/<Название> (<Автор>).md` (новый) | разбор чужого скрипта после согласованных выводов | да | да, только новый файл | нет | нет | MANUAL | только A |
+| существующие `Гипноз/Скрипты/*.md` | прежние разборы | да | — | нет (правка — решение пользовательницы) | нет | — | — |
+| `Гипноз/Источники/<Название> (<Автор>).md` (новый) | конспект нового источника по шаблону | да | да, только новый файл | нет | нет | MANUAL | только A |
+| `Гипноз/Свои скрипты/<Название>.md` (новый) | свой скрипт после одобрения текста | да | да, только новый файл | нет | нет | MANUAL | только A |
+| `Гипноз/Гипноз — главная.md` | ссылка или строка таблицы на новую заметку; поле `обновлено` | да | — | дописать ссылку или строку; обновить только `обновлено` | нет | MANUAL | только M |
+| `Гипноз/Техники/` — 6 перечисленных файлов | новая техника со ссылкой на источник | да | — | только дописать | нет | MANUAL | только M |
+| `Гипноз/Для постов/Приёмы для постов.md` | новый приём для постов | да | — | только дописать | нет | MANUAL | только M |
+| `Гипноз/Шаблон источника.md`, `.gitkeep`, новые подпапки | — | да | нет | нет | нет | — | — |
+Правило имени для новых файлов: один сегмент пути в указанной папке, без `/`, `\`, `..`, без ведущей точки, `.md`, файла с таким именем ещё нет (иначе запрос не применяется, перезаписи нет).
+Новые ключи `ключ-дубликата`: `hypno-note:<путь>`, `hypno-link:<путь заметки>`, `hypno-add:<путь>:<кратко>:<дата>`, `hypno-meta:обновлено:<дата>`. Имена 8 полей не менялись.
+Новое правило для всех путей: статус в `--name-status` должен соответствовать операции (создание → A, дописывание и обновление → M). Это нужно для того, чтобы создание в `Гипноз/` не перезаписывало существующий файл.
+Остальной allowlist (Посты/, Обучение/, Перерывы, События) не менялся. dry-run по-прежнему не разрешает запись в `Гипноз/`: в прогоне нет MANUAL, и awk-фильтр в `--verify` такие пути не пропускает.
+
+======================================================================
+3. ПРЕДЛОЖЕНИЕ ПО GIT HOOKS (Archive Management, раздел «Коммит и проверка hooks»)
+======================================================================
+Hooks не отключаются и не обходятся: никаких `--no-verify`, `-n`, `-c core.hooksPath=…`, переименования или chmod hooks, `commit --amend`, `revert`, `reset`, `restore`, `checkout`, `clean`, `stash`.
+1. Непосредственно перед коммитом (после проверок staged diff) записываются:
+   - `STAGED_TREE` = `git write-tree`;
+   - `STAGED_NS` = `git -c core.quotepath=false diff --cached --name-status`;
+   - `STAGED_SHA` = sha256 от `git diff --cached --binary`;
+   - `MSG`.
+2. `git commit -m "<MSG>"`, hooks выполняются как обычно.
+3. Коммит не создан → СТОП. HEAD должен остаться базовым. В отчёт: вывод hook, сравнение `git write-tree` с `STAGED_TREE`, `git status`. Без повтора и без обхода.
+4. Коммит создан → проверка, любое расхождение = СТОП без push:
+   a) ровно один новый коммит: `rev-list --count база..HEAD` = 1, `HEAD^` = база;
+   b) `HEAD^{tree}` = `STAGED_TREE`;
+   c) `diff-tree --no-commit-id --name-status -r HEAD` = `STAGED_NS`, все пути из allowlist, статус соответствует операции;
+   d) sha256 от `git diff --binary база HEAD` = `STAGED_SHA`;
+   e) `git status --porcelain=v1 --untracked-files=all` пустой (файлы, новые файлы, индекс);
+   f) сообщение = `MSG`, без завершающих переводов строки.
+5. Перед push `HEAD` = проверенный коммит. После push ls-remote = этот коммит.
+6. При расхождении: коммит остаётся локально, отката нет. Полный отчёт только командами чтения. Следующий Preflight остановится на грязном дереве или на том, что локальная `main` впереди `origin/main` и GitHub.
+Поведение по отказам:
+- pre-commit отклонил → шаг 3: коммита нет, всё как есть, стоп.
+- hook изменил файлы → 4e (или шаг 3): стоп, без push.
+- hook изменил индекс → 4b, 4c, 4d: стоп, без push.
+- commit-msg изменил сообщение → 4f: стоп, без push. Решение: автоматически это не принимается, решает пользовательница (это открытый вопрос, не блокер).
+- post-commit изменил или создал файлы → 4e: стоп, без push.
+- hook сделал лишний коммит → 4a: стоп, без push.
+- несовпадение дерева или состава → 4b, 4c: стоп, без push.
+- pre-push отклонил → как отклонённый push: ls-remote, не больше одного повтора при неизменной ветке, коммит остаётся локально.
+Dry-run:
+- те же шаги (dryrun-prompt, этап 8): агент пишет STAGED_TREE, STAGED_NS, STAGED_SHA и COMMIT_MSG в /workspace/dryrun/report/;
+- `--verify` (блок 6a в dryrun-setup.sh) сравнивает HEAD^ с BASE, дерево, состав, sha256 diff и сообщение;
+- hooks песочницы — копия hooks настоящего хранилища (cp -a), блокирующий pre-push сохранён.
+- Проверено только `bash -n`. Скрипт не запускался.
+Изменения в промпте Routine (минимальные):
+- в блоке stage 8 добавлены строка о hooks и строка «Гипноз/ только чтение для Routine»;
+- в «Git safety» добавлены amend и запрет обхода или отключения hooks.
+
+======================================================================
+4. ЗАКЛЮЧИТЕЛЬНАЯ ПРОВЕРКА ПО КРИТЕРИЯМ
+======================================================================
+Сокращения: A = v3/mirraylina-archive-management.SKILL.md, P = v3/routine-2.0-prompt.txt, DP = dryrun-prompt.txt, DS = dryrun-setup.sh, L = Learning, S = Source. Номера строк — по выводу rg ниже.
+| № | Критерий | Итог | Доказательство |
+|---|---|---|---|
+| K1 | Точная проверка remote | PASS | A:31–35 (4 точные строки, нормализация, без подстрок); DS:31–36 `url_ok` через `case`; `grep -q`/REMOTE_EXPECTED нет (exit=1) |
+| K2 | Отдельно fetch и push, несколько URL | PASS | A:36–38; DS:44 (`get-url --all`), DS:56 (`--push --all` = no_push); DP:17 |
+| K3 | Явная цель push | PASS | A:152, P:16/29/41 — `git push origin HEAD:refs/heads/main`; единственная другая строка с `git push` — запрет push в песочнице (DP:36) |
+| K4 | Реальное состояние remote через ls-remote | PASS | A:104, 153–154; P:6, 29; `rev-parse origin/main` нигде нет (exit=1) |
+| K5 | Контракт MANUAL | PASS | A:50–60 (значения, `основание` с цитатой, Routine не создаёт); P:19, 28; Гипноз/ — только MANUAL (A:75 и далее) |
+| K6 | Второй вызов Learning History | PASS | P:14 (этап 6b, входы и выход); L:37–43 («Вызов 2», `skip:<дата>`, «неизвестен») |
+| K7 | Состояние git в dry-run | PASS | DS:12 (три понятия), 81–107 (real HEAD/status/tracking, sandbox tracking, ls-remote), 178–180, 206–207 |
+| K8 | Неожиданный staged diff | PASS | A:161–165 (стоп, без отката, отчёт, без авто-очистки, Preflight остановится); A:138 (после коммита) |
+| K9 | Защита от hooks | PASS | A:126–138 (write-tree, diff-tree, HEAD^{tree}, sha256, rev-list, без --no-verify); P:27; DP:37, 68; DS:135–152 |
+| K10 | Единый контракт | PASS | 8/8 имён полей в P, A, L, S, DP |
+| K11 | Нет git-записей вне Archive Management | PASS | rg по L, S и трём неизменённым навыкам — exit=1 |
+| K12 | Нет автоматических конфликтных операций | PASS | `pull --rebase`, `rebase --abort`, `--theirs/--ours`, mergetool — exit=1; любой `git pull` только `--ff-only` |
+| K13 | Нет автоматического отката | PASS | reset/restore/checkout/clean/stash/amend/revert встречаются только в строках-запретах: A:126, 162, 169; DP:37; P:27 |
+| K14 | X только чтение | PASS | «Never post…» совпадает с действующим промптом (SAME_X_RULE); блок X в dry-run совпадает с оригиналом (SAME_X_BLOCK) |
+| K15 | Канон без изменений без одобрения | PASS | правила Posting gap, Substantial, Experimental, Do not change, Final agreed и строки 1–3 совпадают (SAME_RULES, SAME_HEAD_CANON_PROFILE); канонических файлов в allowlist нет (rg exit=1); A:63 «канон … только чтение» |
+| — | Live-навыки не изменены | PASS | cmp: live = fix/live для всех 6 |
+| — | Гипноз/ без рекурсивного доступа | PASS | `Гипноз/**` нет; A:75 |
+| — | Синтаксис скрипта | PASS (только bash -n) | SYNTAX_OK; копии review/ = v3 |
+
+--- вывод checks-v3.sh ---
+### K1 точная проверка remote
+$ rg -n "^- \`https://github.com/Ernyskaliry/Mirraylina|^- \`git@github|^- \`ssh://|Нормализация|Частичное совпадение" $A
+31:- `https://github.com/Ernyskaliry/Mirraylina.git`
+32:- `https://github.com/Ernyskaliry/Mirraylina`
+33:- `git@github.com:Ernyskaliry/Mirraylina.git`
+34:- `ssh://git@github.com/Ernyskaliry/Mirraylina.git`
+35:Нормализация: только удалить завершающий перевод строки (`\n`, `\r`) из вывода команды. Регистр, завершающий `/`, `.git`, порт, логин, токен, query и fragment не нормализуются: любое отличие — не совпадение. Частичное совпадение (подстрока) не используется.
+[exit=0]
+
+$ rg -n "url_ok\(\)|\"https://github.com/Ernyskaliry/Mirraylina|\"git@github|\"ssh://git@github" $DS
+31:url_ok() {
+33:    "https://github.com/Ernyskaliry/Mirraylina.git"|\
+34:    "https://github.com/Ernyskaliry/Mirraylina"|\
+35:    "git@github.com:Ernyskaliry/Mirraylina.git"|\
+36:    "ssh://git@github.com/Ernyskaliry/Mirraylina.git") return 0 ;;
+[exit=0]
+
+$ rg -n "grep -q[^x]|REMOTE_EXPECTED" $DS
+[exit=1]
+
+### K2 отдельно fetch и push URL, несколько адресов
+$ rg -n "get-url --all origin|get-url --push --all origin|Несколько адресов" $A $DS $DP
+mirraylina-archive-management.SKILL.md:36:- Fetch: `git remote get-url --all origin` — каждая строка вывода должна точно совпасть с одной из разрешённых.
+mirraylina-archive-management.SKILL.md:37:- Push: `git remote get-url --push --all origin` — то же для каждой строки (git подставляет pushurl, если он задан, иначе url; правила insteadOf/pushInsteadOf уже применены).
+mirraylina-archive-management.SKILL.md:38:- Несколько адресов — проверяется каждый; хотя бы один не прошёл — СТОП.
+dryrun-setup.sh:44:  out=$(git -C "$1" remote get-url --all origin 2>&1) || stop "fetch URL origin не определить: $(printf '%s' "$out" | mask)"
+dryrun-setup.sh:56:  out=$(git -C "$1" remote get-url --push --all origin 2>&1) || stop "push URL origin не определить: $(printf '%s' "$out" | mask)"
+dryrun-prompt.txt:17:1. Адреса remote: каждая строка `git -C /workspace/dryrun/vault remote get-url --all origin` точно (целиком, без подстрок) совпадает с одним из допустимых адресов навыка archive-management; каждая строка `git remote get-url --push --all origin` точно равна `no_push` (в песочнице push отключён намеренно); есть исполняемый .git/hooks/pre-push. Ошибка, пустой вывод или несовпадение — СТОП.
+[exit=0]
+
+### K3 явная цель push
+$ rg -n "git push" . | rg -v "origin HEAD:refs/heads/main"
+./dryrun-prompt.txt:36:- Push-часть боевого режима до самой отправки: повторить проверку адресов (fetch — допустимые, push — no_push); pre-push `git ls-remote origin refs/heads/main` записать и сравнить с SANDBOX_REMOTE_BASE (ошибка или другой sha — записать «в боевом режиме push не выполнялся бы»). Саму команду `git push` НЕ выполнять. Записать «push пропущен (ТЕСТ)» и что было бы отправлено: `git log --oneline "$(cat /workspace/dryrun/SANDBOX_REMOTE_BASE)"..HEAD`.
+[exit=0]
+
+$ rg -n "git push origin HEAD:refs/heads/main" .
+./mirraylina-archive-management.SKILL.md:152:3. `git push origin HEAD:refs/heads/main` (без force, другой формы push нет).
+./routine-2.0-prompt.txt:16:8. Archive — @Mirraylina — Archive Management, section «Запись»: the ONLY stage that writes to the repo, commits and pushes. Stages 3, 6b and 7 have finished before it starts; it applies their change requests and archives/indexes posts from stage-1 data, then one commit and `git push origin HEAD:refs/heads/main`, in this bot's repo only.
+./routine-2.0-prompt.txt:29:- one commit with a short Russian message; re-check the origin URLs; record the pre-push remote sha (`git ls-remote origin refs/heads/main`), which must still equal the base remote sha (if it differs or ls-remote fails: no push, the commit stays local, report); push with `git push origin HEAD:refs/heads/main` (never force); verify that ls-remote now returns the local commit sha and the tree is clean;
+./routine-2.0-prompt.txt:41:- Git safety: one sync per run, only in stage 0 (`git pull --ff-only origin main`; never `--rebase`, never a plain merge pull); the only writes, commit and push are in stage 8, and the only push form is `git push origin HEAD:refs/heads/main`; never force-push, reset, restore, checkout, clean, stash, rebase, merge, amend, bypass or disable git hooks, delete branches or files, or resolve conflicts in my favour; never overwrite the user's edits; never roll anything back automatically. On a dirty tree, failed sync, unexpected staged diff, conflict, rejected push with a changed remote or an ls-remote error: stop and report.
+[exit=0]
+
+### K4 реальное состояние remote через ls-remote
+$ rg -n "ls-remote origin refs/heads/main" $A $P
+mirraylina-archive-management.SKILL.md:104:7. Синхронность: `git rev-parse HEAD` = `git rev-parse refs/remotes/origin/main` (локальная remote-tracking ссылка) = sha из `git ls-remote origin refs/heads/main` (фактическая ветка на GitHub). Вывод ls-remote — ровно одна строка `<40 hex>\trefs/heads/main`; ошибка, пустой или иной вывод — СТОП.
+mirraylina-archive-management.SKILL.md:151:2. Pre-push sha: `git ls-remote origin refs/heads/main`. Ошибка или иной вывод — без push. Sha ≠ базовому sha remote (ветка на GitHub изменилась за время запуска) — без push. В обоих случаях коммит остаётся локально, сообщить.
+mirraylina-archive-management.SKILL.md:153:4. Успех: `git ls-remote origin refs/heads/main` = `git rev-parse HEAD` (= проверенный коммит); `git status --porcelain` пустой. ls-remote не удался или sha другой — сообщить «push не подтверждён», ничего не исправлять.
+mirraylina-archive-management.SKILL.md:154:5. Push отклонён: без force, pull, rebase, merge и разрешения конфликтов. Снова `git ls-remote origin refs/heads/main`:
+routine-2.0-prompt.txt:6:0. Git Preflight — @Mirraylina — Archive Management, section «Preflight» only (no file edits). Runs before stage 1 and before any write. Follow the skill's Preflight steps exactly: exact remote check of every fetch and push URL of origin against the skill's URL allowlist; repo root /workspace/vault-repo; branch main; `git status --porcelain` empty; `git pull --ff-only origin main`; HEAD = origin/main (local remote-tracking ref) = `git ls-remote origin refs/heads/main` (actual remote branch); record base HEAD and base remote sha (from ls-remote).
+routine-2.0-prompt.txt:29:- one commit with a short Russian message; re-check the origin URLs; record the pre-push remote sha (`git ls-remote origin refs/heads/main`), which must still equal the base remote sha (if it differs or ls-remote fails: no push, the commit stays local, report); push with `git push origin HEAD:refs/heads/main` (never force); verify that ls-remote now returns the local commit sha and the tree is clean;
+[exit=0]
+
+$ rg -n "rev-parse origin/main" .
+[exit=1]
+
+### K5 контракт MANUAL
+$ rg -n "MANUAL" $A $P
+routine-2.0-prompt.txt:19:Write ownership: after a successful Preflight, stages 1–7 (including 6b) only read files and produce results; they never create, edit or append files and never run git commands that change the repo. Stages 3, 6b and 7 hand their change requests to stage 8 and do not write them themselves. Every change request uses the contract defined in Archive Management, with exactly these 8 fields: `путь`, `операция`, `содержимое`, `дата`, `этап-источник`, `основание`, `ключ-дубликата`, `статус`. Allowed `этап-источник` values in this routine: `1`, `3`, `6b`, `7`. The value `MANUAL` is only for a change the user explicitly asked for in the chat; this routine never creates MANUAL requests and never treats a user message as permission for a write. Stage 8 applies only what it received (and post data from stage 1); it never invents record content.
+routine-2.0-prompt.txt:28:- the folder Гипноз/ is read-only for this routine (writes there come only from MANUAL requests, see Archive Management);
+mirraylina-archive-management.SKILL.md:19:- Ручная задача в чате, когда пользовательница прямо попросила конкретное изменение: тот же «Preflight» (один раз), потом тот же раздел «Запись» с запросами `MANUAL`. Одна синхронизация на задачу.
+mirraylina-archive-management.SKILL.md:23:2. Запросы изменений по контракту ниже: от этапов 3 и 6b (Learning History & Experiments), 7 (Source Tracking) или `MANUAL`.
+mirraylina-archive-management.SKILL.md:48:| `содержимое` | точный текст записи или строк таблицы; для `обновить запись` — `было: … / стало: …`; для `создать отсутствующий файл` — пустой шаблон (заголовок и шапка таблицы), без истории; для новых заметок в `Гипноз/` — полный текст заметки из запроса MANUAL |
+mirraylina-archive-management.SKILL.md:50:| `этап-источник` | `1` · `3` · `6b` · `7` · `MANUAL` |
+mirraylina-archive-management.SKILL.md:51:| `основание` | непустое: ссылки, цифры, пути, на которых основана запись; для `MANUAL` — `цитата: «<дословные слова пользовательницы>»; сообщение: <id сообщения или дата и время МСК>; канал: чат Grok Bot` |
+mirraylina-archive-management.SKILL.md:56:### Источник MANUAL
+mirraylina-archive-management.SKILL.md:59:- Routine (этапы 0–9) запросы `MANUAL` никогда не создаёт и не принимает: `MANUAL` в запуске Routine — не применяется, сообщить.
+mirraylina-archive-management.SKILL.md:60:- `MANUAL` проходит те же проверки, что и все: Preflight, allowlist путей, проверки до записи, staged diff, правила push.
+mirraylina-archive-management.SKILL.md:66:| `Посты/Архив постов.md` | `1` (пересчёт индекса), `MANUAL` | нет (файл есть) |
+mirraylina-archive-management.SKILL.md:67:| `Посты/Гипноз.md`, `Посты/Лор.md`, `Посты/Юмор.md`, `Посты/Опросы и выбор.md`, `Посты/Femdom.md`, `Посты/Sub.md`, `Посты/Размышления.md`, `Посты/Коллабы.md`, `Посты/Праздники и события.md`, `Посты/Другое.md` | `1`, `MANUAL` | нет (файлы есть) |
+mirraylina-archive-management.SKILL.md:68:| `Посты/Учёт источников.md` | `7`, `MANUAL` | нет (файл есть) |
+mirraylina-archive-management.SKILL.md:69:| `Обучение/Журнал наблюдений.md` | `3`, `6b`, `MANUAL` | только после подтверждения пользовательницы (новая папка) |
+mirraylina-archive-management.SKILL.md:70:| `Обучение/Эксперименты.md` | `3`, `MANUAL` | только после подтверждения пользовательницы (новая папка) |
+mirraylina-archive-management.SKILL.md:71:| `Посты/Перерывы.md` | только `MANUAL` | только после подтверждения пользовательницы |
+mirraylina-archive-management.SKILL.md:72:| `Посты/События.md` | только `MANUAL` | только после подтверждения пользовательницы; до этого не писать |
+mirraylina-archive-management.SKILL.md:75:### Гипноз/ — только `MANUAL`, без рекурсивного доступа
+mirraylina-archive-management.SKILL.md:76:Назначение папки: изучение гипноза для фикции, RP и добровольного эротического гипноза между взрослыми; разборы чужих скриптов; разработка своих скриптов для контента. Этапы Routine 0–9 в `Гипноз/` только читают (Content Engine — `Гипноз/Для постов/Приёмы для постов.md` и `Гипноз/Техники/*.md`). Писать сюда можно только по запросу `MANUAL`.
+mirraylina-archive-management.SKILL.md:112:4. Запросы этапов 3, 6b, 7 и `MANUAL` применять как есть, без дописывания.
+[exit=0]
+
+### K6 второй вызов Learning History
+$ rg -n "^6b\. |^## Вызов 2|skip:<YYYY-MM-DD>|статус пропуска неизвестен" $P $L
+routine-2.0-prompt.txt:14:6b. Learning history, call 2 (run status) — @Mirraylina — Learning History & Experiments, section «Вызов 2», READ-ONLY. Input: the stage-3 change list (keys only, to avoid duplicates), whether stages 1–2 actually ran, the stage-4 result (days already covered / declared break), and the stage-6 result: completed or failed, number of drafts that passed. Output: at most ONE change request with `ключ-дубликата` = `skip:<YYYY-MM-DD>` («пропуск» or «черновик есть»); it does not repeat any stage-3 observation. If stage 6 failed or did not provide its result, or the day needed no draft (covered by agreed posts or a declared break), no skip record is prepared and the report says «статус пропуска неизвестен» with the reason.
+mirraylina-learning-history-experiments.SKILL.md:37:## Вызов 2 (этап 6b)
+mirraylina-learning-history-experiments.SKILL.md:41:4. Этап 6 завершился ошибкой или не передал итог, или этапы 1–2 не выполнены — запроса нет; в отчёт: «статус пропуска неизвестен» и причина. Пропуск не придумывать.
+mirraylina-learning-history-experiments.SKILL.md:42:5. День не требовал черновика (закрыт утверждёнными постами или объявлен перерыв) — запроса нет; в отчёт: «статус пропуска неизвестен: черновик не требовался» (как считать такие дни — открытый вопрос к пользовательнице).
+mirraylina-learning-history-experiments.SKILL.md:43:6. Не больше одного запроса: `путь` = `Обучение/Журнал наблюдений.md`, `операция` = `добавить запись`, `ключ-дубликата` = `skip:<YYYY-MM-DD>`, `этап-источник` = `6b`, `статус` = `обязательное`. Запись с этим ключом уже есть в журнале — запроса нет.
+mirraylina-learning-history-experiments.SKILL.md:54:- `ключ-дубликата` — `obs:<YYYY-MM-DD>:<кратко>` · `hyp:<кратко>:<YYYY-MM-DD>` · `exp:<кратко>:<YYYY-MM-DD>` · `skip:<YYYY-MM-DD>` · `file:<путь>`;
+mirraylina-learning-history-experiments.SKILL.md:72:Пользователю: 1–3 строки — что узнали, какой эксперимент предлагаю; статус пропуска или «статус пропуска неизвестен».
+[exit=0]
+
+### K7 состояние git в dry-run
+$ rg -n "remote-tracking|SANDBOX_REMOTE_BASE|SANDBOX_TRACKING_BASE|REAL_BASE_" $DS
+12:#   локальная remote-tracking ссылка — git rev-parse refs/remotes/origin/main (НЕ состояние GitHub)
+81:  if [ "$(git -C "$SRC" rev-parse HEAD)" = "$(cat "$ROOT/REAL_BASE_HEAD")" ]; then
+85:  if diff -u "$ROOT/REAL_BASE_STATUS" "$ROOT/report/real-status-after.txt"; then
+88:  if [ "$(git -C "$SRC" rev-parse "$TRACKING")" = "$(cat "$ROOT/REAL_BASE_TRACKING")" ]; then
+89:    echo "PASS: локальная remote-tracking ссылка настоящего хранилища не изменилась (это не состояние GitHub)"
+90:  else echo "FAIL: локальная remote-tracking ссылка настоящего хранилища изменилась"; fail=1; fi
+94:  # 3. Локальная remote-tracking ссылка песочницы (НЕ GitHub).
+95:  if [ "$(git -C "$DRY" rev-parse "$TRACKING")" = "$(cat "$ROOT/SANDBOX_TRACKING_BASE")" ]; then
+96:    echo "PASS: локальная remote-tracking ссылка песочницы не изменилась (это не состояние GitHub)"
+97:  else echo "FAIL: локальная remote-tracking ссылка песочницы изменилась (в прогоне был fetch/pull?)"; fail=1; fi
+104:    elif [ "$now" = "$(cat "$ROOT/SANDBOX_REMOTE_BASE")" ]; then
+178:git -C "$SRC" rev-parse HEAD > "$ROOT/REAL_BASE_HEAD"
+179:git -C "$SRC" rev-parse "$TRACKING" > "$ROOT/REAL_BASE_TRACKING"
+180:real_status > "$ROOT/REAL_BASE_STATUS"
+206:echo "$sha_tracking" > "$ROOT/SANDBOX_TRACKING_BASE"   # локальная remote-tracking ссылка
+207:echo "$sha_github"   > "$ROOT/SANDBOX_REMOTE_BASE"     # фактическая ветка на GitHub (ls-remote)
+221:echo "remote-tracking origin/main песочницы (локально): $(cat "$ROOT/SANDBOX_TRACKING_BASE")"
+222:echo "main на GitHub (ls-remote): $(cat "$ROOT/SANDBOX_REMOTE_BASE")"
+223:echo "настоящий репо: HEAD $(cat "$ROOT/REAL_BASE_HEAD"), tracking $(cat "$ROOT/REAL_BASE_TRACKING"), status:"
+224:cat "$ROOT/REAL_BASE_STATUS"
+[exit=0]
+
+### K8 неожиданный staged diff
+$ rg -n "^## Остановка|без отката|Способ автоматической очистки не предлагать|Следующий Preflight остановится" $A
+138:6. При расхождении после коммита: коммит остаётся локально, ничего не откатывать и не исправлять. Отчёт (только чтение): базовый HEAD, `HEAD`, `HEAD^`, `git log --oneline <база>..HEAD`, `STAGED_TREE` и `HEAD^{tree}`, `STAGED_NS` и вывод `diff-tree`, оба sha256, `git status`, `git diff`, оба сообщения, вывод hooks. Следующий Preflight остановится: дерево грязное или локальная `main` впереди `origin/main` и GitHub (шаг 7 Preflight).
+161:## Остановка при неожиданном изменении
+162:- Сразу прекратить этап: без коммита, без push, без отката. Не выполнять `git reset`, `git restore`, `git checkout`, `git clean`, `git stash` и любые другие команды, меняющие индекс или файлы. Всё оставить как есть.
+164:- Пользовательнице: что посмотреть (список файлов, какие правки сделал бот по запросам, есть ли среди изменённых её файлы) и что решение за ней: например, проверить и закоммитить самой, отменить правки бота самой в своём Git-клиенте или Obsidian, или дать мне отдельное прямое указание. Способ автоматической очистки не предлагать.
+165:- Следующий Preflight остановится на грязном дереве, пока пользовательница не разберётся.
+[exit=0]
+
+### K9 защита от hooks
+$ rg -n "write-tree|diff-tree|HEAD\^\{tree\}|no-verify|STAGED_SHA|rev-list --count" $A $P $DP $DS
+mirraylina-archive-management.SKILL.md:126:Hooks не отключать и не обходить: никогда `--no-verify`, `-n`, `-c core.hooksPath=…`, переименование или `chmod` hooks, `commit --amend`, `revert`, `reset`, `restore`, `checkout`, `clean`, `stash`.
+mirraylina-archive-management.SKILL.md:127:1. Непосредственно перед коммитом записать: `STAGED_TREE` = `git write-tree`; `STAGED_NS` = `git -c core.quotepath=false diff --cached --name-status`; `STAGED_SHA` = sha256 от `git diff --cached --binary`; `MSG` = текст сообщения коммита.
+mirraylina-archive-management.SKILL.md:129:3. Коммит не создан (код возврата ≠ 0, например отказ pre-commit или commit-msg) — СТОП: `git rev-parse HEAD` должен остаться базовым; отчёт с выводом hook; дополнительно сравнить `git write-tree` с `STAGED_TREE` и `git status --porcelain=v1 --untracked-files=all` — изменил ли hook индекс или файлы. Без повтора, без обхода.
+mirraylina-archive-management.SKILL.md:131:   a) `git rev-list --count <базовый HEAD>..HEAD` = `1` и `git rev-parse HEAD^` = базовый HEAD (ровно один новый коммит поверх базы; лишний коммит от hook — расхождение);
+mirraylina-archive-management.SKILL.md:132:   b) `git rev-parse HEAD^{tree}` = `STAGED_TREE` (hook не менял индекс);
+mirraylina-archive-management.SKILL.md:133:   c) `git -c core.quotepath=false diff-tree --no-commit-id --name-status -r HEAD` = `STAGED_NS`; каждая строка — путь из allowlist со статусом по шагу 14;
+mirraylina-archive-management.SKILL.md:134:   d) sha256 от `git diff --binary <базовый HEAD> HEAD` = `STAGED_SHA`;
+mirraylina-archive-management.SKILL.md:138:6. При расхождении после коммита: коммит остаётся локально, ничего не откатывать и не исправлять. Отчёт (только чтение): базовый HEAD, `HEAD`, `HEAD^`, `git log --oneline <база>..HEAD`, `STAGED_TREE` и `HEAD^{tree}`, `STAGED_NS` и вывод `diff-tree`, оба sha256, `git status`, `git diff`, оба сообщения, вывод hooks. Следующий Preflight остановится: дерево грязное или локальная `main` впереди `origin/main` и GitHub (шаг 7 Preflight).
+mirraylina-archive-management.SKILL.md:169:- Никогда: `push --force`, `reset`, `restore`, `checkout` файлов, `clean`, `stash`, `rebase`, `merge`, `commit --amend`, `revert`, `--no-verify`, отключение hooks, удаление веток или файлов пользователя без явной просьбы.
+routine-2.0-prompt.txt:27:- hooks are never disabled or bypassed (no `--no-verify`, no `core.hooksPath` override, no `commit --amend`); right before the commit record the staged tree, name-status and staged diff hash; after the commit verify exactly one new commit on top of the base HEAD, commit tree = recorded staged tree, same name-status and diff hash, clean tree and unchanged message; any mismatch or hook rejection: stop, no push, no rollback, the commit (if any) stays local and is reported;
+dryrun-prompt.txt:37:- Проверка hooks — как в боевом режиме (archive-management, раздел «Коммит и проверка hooks»). Hooks песочницы скопированы из настоящего хранилища (cp -a), pre-push заменён блокирующим; остальные hooks не отключать и не обходить: без `--no-verify`, `-n`, `core.hooksPath`, `commit --amend`. Непосредственно перед коммитом записать в /workspace/dryrun/report/: STAGED_TREE (`git write-tree`), STAGED_NS (`git -c core.quotepath=false diff --cached --name-status`), STAGED_SHA (`git diff --cached --binary | sha256sum | cut -d' ' -f1`), COMMIT_MSG (текст сообщения). После коммита проверить шаги 4a–4f навыка (один новый коммит поверх BASE, `HEAD^{tree}` = STAGED_TREE, `diff-tree` = STAGED_NS, sha256 diff = STAGED_SHA, чистое дерево, сообщение не изменено). Отказ hook или любое расхождение — стоп без отката, коммит (если есть) остаётся, всё записать в отчёт.
+dryrun-prompt.txt:68:   [ ] hooks: не отключались и не обходились; перед коммитом записаны STAGED_TREE/STAGED_NS/STAGED_SHA/COMMIT_MSG; после коммита — совпадение по шагам 4a–4f (подтверждено --verify)
+dryrun-setup.sh:135:    for f in STAGED_TREE STAGED_NS STAGED_SHA COMMIT_MSG; do
+dryrun-setup.sh:138:    if [ -f "$R/STAGED_TREE" ] && [ -f "$R/STAGED_NS" ] && [ -f "$R/STAGED_SHA" ] && [ -f "$R/COMMIT_MSG" ]; then
+dryrun-setup.sh:141:      [ "$(git -C "$DRY" rev-parse 'HEAD^{tree}')" = "$(tr -d '[:space:]' < "$R/STAGED_TREE")" ] \
+dryrun-setup.sh:143:      if git -C "$DRY" -c core.quotepath=false diff-tree --no-commit-id --name-status -r HEAD | diff -u "$R/STAGED_NS" -; then
+dryrun-setup.sh:146:      [ "$(git -C "$DRY" diff --binary "$BASE" HEAD | sha256sum | cut -d' ' -f1)" = "$(tr -d '[:space:]' < "$R/STAGED_SHA")" ] \
+dryrun-setup.sh:147:        && echo "PASS: sha256 diff коммита = STAGED_SHA" || { echo "FAIL: содержимое коммита ≠ проверенному staged diff"; fail=1; }
+[exit=0]
+
+### K10 единый контракт
+$ for f in $P $A $L $S $DP; do n=0; for k in "\`путь\`" "\`операция\`" "\`содержимое\`" "\`дата\`" "\`этап-источник\`" "\`основание\`" "\`ключ-дубликата\`" "\`статус\`"; do rg -qF "$k" $f && n=$((n+1)); done; echo "$f: $n/8"; done
+routine-2.0-prompt.txt: 8/8
+mirraylina-archive-management.SKILL.md: 8/8
+mirraylina-learning-history-experiments.SKILL.md: 8/8
+mirraylina-source-tracking.SKILL.md: 8/8
+dryrun-prompt.txt: 8/8
+[exit=0]
+
+### K11 нет git-записей вне Archive Management
+$ rg -n "git (add|commit|push|pull|fetch|reset|restore|checkout|clean|stash|rebase|merge|write-tree)" $L $S /workspace/drafts/fix/live/mirraylina-content-engine.SKILL.md /workspace/drafts/fix/live/mirraylina-competitor-research.SKILL.md /workspace/drafts/fix/live/mirraylina-rp-account-analytics.SKILL.md
+[exit=1]
+
+### K12 нет автоматических конфликтных операций
+$ rg -n "pull --rebase|rebase --abort|merge --|mergetool|--theirs|--ours" .
+[exit=1]
+
+$ rg -n "git pull" . | rg -v "pull --ff-only"
+[exit=1]
+
+### K13 нет автоматического отката (команды только в запретах)
+$ rg -n "git reset|git restore|git checkout|git clean|git stash|commit --amend|git revert|restore --staged" .
+./mirraylina-archive-management.SKILL.md:126:Hooks не отключать и не обходить: никогда `--no-verify`, `-n`, `-c core.hooksPath=…`, переименование или `chmod` hooks, `commit --amend`, `revert`, `reset`, `restore`, `checkout`, `clean`, `stash`.
+./mirraylina-archive-management.SKILL.md:162:- Сразу прекратить этап: без коммита, без push, без отката. Не выполнять `git reset`, `git restore`, `git checkout`, `git clean`, `git stash` и любые другие команды, меняющие индекс или файлы. Всё оставить как есть.
+./mirraylina-archive-management.SKILL.md:169:- Никогда: `push --force`, `reset`, `restore`, `checkout` файлов, `clean`, `stash`, `rebase`, `merge`, `commit --amend`, `revert`, `--no-verify`, отключение hooks, удаление веток или файлов пользователя без явной просьбы.
+./dryrun-prompt.txt:37:- Проверка hooks — как в боевом режиме (archive-management, раздел «Коммит и проверка hooks»). Hooks песочницы скопированы из настоящего хранилища (cp -a), pre-push заменён блокирующим; остальные hooks не отключать и не обходить: без `--no-verify`, `-n`, `core.hooksPath`, `commit --amend`. Непосредственно перед коммитом записать в /workspace/dryrun/report/: STAGED_TREE (`git write-tree`), STAGED_NS (`git -c core.quotepath=false diff --cached --name-status`), STAGED_SHA (`git diff --cached --binary | sha256sum | cut -d' ' -f1`), COMMIT_MSG (текст сообщения). После коммита проверить шаги 4a–4f навыка (один новый коммит поверх BASE, `HEAD^{tree}` = STAGED_TREE, `diff-tree` = STAGED_NS, sha256 diff = STAGED_SHA, чистое дерево, сообщение не изменено). Отказ hook или любое расхождение — стоп без отката, коммит (если есть) остаётся, всё записать в отчёт.
+./routine-2.0-prompt.txt:27:- hooks are never disabled or bypassed (no `--no-verify`, no `core.hooksPath` override, no `commit --amend`); right before the commit record the staged tree, name-status and staged diff hash; after the commit verify exactly one new commit on top of the base HEAD, commit tree = recorded staged tree, same name-status and diff hash, clean tree and unchanged message; any mismatch or hook rejection: stop, no push, no rollback, the commit (if any) stays local and is reported;
+[exit=0]
+
+### K14 X только чтение
+$ diff <(rg "^- Never post" /workspace/drafts/fix/live/routine-2.0-prompt.live.txt) <(rg "^- Never post" $P) && echo SAME_X_RULE
+SAME_X_RULE
+[exit=0]
+
+$ diff <(sed -n "/^X:/,/^ПРАВИЛА/p" /workspace/drafts/fix/live/dryrun-prompt.orig.txt) <(sed -n "/^X:/,/^ПРАВИЛА/p" $DP) && echo SAME_X_BLOCK
+SAME_X_BLOCK
+[exit=0]
+
+### K15 канон без изменений без одобрения
+$ diff <(rg "^- (Posting gap|Substantial|Experimental|Do not change|Final agreed)" /workspace/drafts/fix/live/routine-2.0-prompt.live.txt) <(rg "^- (Posting gap|Substantial|Experimental|Do not change|Final agreed)" $P) && echo SAME_RULES
+SAME_RULES
+[exit=0]
+
+$ diff <(sed -n 1,3p /workspace/drafts/fix/live/routine-2.0-prompt.live.txt) <(sed -n 1,3p $P) && echo SAME_HEAD_CANON_PROFILE
+SAME_HEAD_CANON_PROFILE
+[exit=0]
+
+$ rg -n "Лор и канон|Характер.md|Mirraylina.md|Секреты" $A
+[exit=1]
+
+$ rg -n "заметки персонажа|канон" $A
+63:Писать можно только сюда и в пути раздела «Гипноз/» ниже. Всё остальное, включая профиль, канон, README, заметки персонажа, `Отношения/`, шаблоны, — только чтение.
+[exit=0]
+
+### Гипноз/ без рекурсивного доступа
+$ rg -n "Гипноз/\*\*|Гипноз/\*\`|Гипноз/ \(все|рекурсив" $A $P
+mirraylina-archive-management.SKILL.md:75:### Гипноз/ — только `MANUAL`, без рекурсивного доступа
+[exit=0]
+
+### Синтаксис, live не изменены, v3 = review
+$ bash -n $DS && echo SYNTAX_OK
+SYNTAX_OK
+[exit=0]
+
+$ cmp $DS ../dryrun-setup.sh && cmp $DP ../dryrun-prompt.txt && echo REVIEW_COPIES_IDENTICAL
+REVIEW_COPIES_IDENTICAL
+[exit=0]
+
+$ for f in /workspace/drafts/fix/live/mirraylina-*.SKILL.md; do b=$(basename $f .SKILL.md); cmp -s $f /home/box/agent-data/workflows/$b/SKILL.md && echo "$b: live = fix/live" || echo "$b: ОТЛИЧАЕТСЯ"; done
+mirraylina-archive-management: live = fix/live
+mirraylina-competitor-research: live = fix/live
+mirraylina-content-engine: live = fix/live
+mirraylina-learning-history-experiments: live = fix/live
+mirraylina-rp-account-analytics: live = fix/live
+mirraylina-source-tracking: live = fix/live
+[exit=0]
+
+$ for f in $L $S; do cmp -s $f /workspace/drafts/fix/new-v2/$f && echo "$f: v3 = v2 (без изменений)"; done
+mirraylina-learning-history-experiments.SKILL.md: v3 = v2 (без изменений)
+mirraylina-source-tracking.SKILL.md: v3 = v2 (без изменений)
+[exit=0]
+
+
+======================================================================
+5. UNIFIED DIFF v2 → v3 (только изменённые черновики)
+======================================================================
+Изменены: routine-2.0-prompt.txt, mirraylina-archive-management.SKILL.md, dryrun-prompt.txt, dryrun-setup.sh. Learning и Source не менялись.
+
+--- v2: fix/new-v2/routine-2.0-prompt.txt
++++ v3: review/v3/routine-2.0-prompt.txt
+@@ -24,6 +24,8 @@
+ - stage only the explicit allowlisted paths (`git add -- <path>`; never `git add -A`, `git add .` or `git commit -a`); then `git diff --cached --check`, `git diff --cached --name-status` (every path must be in the allowlist, status A or M only) and the full staged diff;
+ - anything unexpected: stop immediately, no commit, no push, no rollback of any kind (no reset, restore, checkout, clean, stash); leave the repo exactly as it is and give the user the diagnostic report from the skill; the next Preflight will stop on the dirty tree until she decides herself;
+ - nothing to change: no commit (no empty commits);
++- hooks are never disabled or bypassed (no `--no-verify`, no `core.hooksPath` override, no `commit --amend`); right before the commit record the staged tree, name-status and staged diff hash; after the commit verify exactly one new commit on top of the base HEAD, commit tree = recorded staged tree, same name-status and diff hash, clean tree and unchanged message; any mismatch or hook rejection: stop, no push, no rollback, the commit (if any) stays local and is reported;
++- the folder Гипноз/ is read-only for this routine (writes there come only from MANUAL requests, see Archive Management);
+ - one commit with a short Russian message; re-check the origin URLs; record the pre-push remote sha (`git ls-remote origin refs/heads/main`), which must still equal the base remote sha (if it differs or ls-remote fails: no push, the commit stays local, report); push with `git push origin HEAD:refs/heads/main` (never force); verify that ls-remote now returns the local commit sha and the tree is clean;
+ - push rejected: no force, pull, rebase, merge or conflict resolution; run ls-remote again: equal to the pre-push sha → at most one retry; changed → no retry; ls-remote fails → stop. In every failure case the local commit is kept and the user is told it stayed local and was not pushed.
+ 
+@@ -36,7 +38,7 @@
+ - Substantial strategy changes (post types, balance, posting window, tone, roster) are proposals only and need the user's approval.
+ - Experimental posts only with a prior explanation: the hypothesis, what is being tested, how it will be measured; the experiment starts only after the user approves.
+ - Do not change this routine's schedule or any routine without the user's consent.
+-- Git safety: one sync per run, only in stage 0 (`git pull --ff-only origin main`; never `--rebase`, never a plain merge pull); the only writes, commit and push are in stage 8, and the only push form is `git push origin HEAD:refs/heads/main`; never force-push, reset, restore, checkout, clean, stash, rebase, merge, delete branches or files, or resolve conflicts in my favour; never overwrite the user's edits; never roll anything back automatically. On a dirty tree, failed sync, unexpected staged diff, conflict, rejected push with a changed remote or an ls-remote error: stop and report.
++- Git safety: one sync per run, only in stage 0 (`git pull --ff-only origin main`; never `--rebase`, never a plain merge pull); the only writes, commit and push are in stage 8, and the only push form is `git push origin HEAD:refs/heads/main`; never force-push, reset, restore, checkout, clean, stash, rebase, merge, amend, bypass or disable git hooks, delete branches or files, or resolve conflicts in my favour; never overwrite the user's edits; never roll anything back automatically. On a dirty tree, failed sync, unexpected staged diff, conflict, rejected push with a changed remote or an ls-remote error: stop and report.
+ - Final agreed post texts are never changed.
+ 
+ Report format (compact, Russian): last post and median; 3–5 niche findings; roster freshness and new-author proposals; learning/experiment update; drafts with date, type, recommended MSK time and text in code blocks (recommended one marked); coverage and sources actually used; archive status with commit hashes; anything unavailable; reminder to run Git: Pull.
+--- v2: fix/new-v2/mirraylina-archive-management.SKILL.md
++++ v3: review/v3/mirraylina-archive-management.SKILL.md
+@@ -43,13 +43,13 @@
+ Ровно 8 полей, имена как здесь:
+ | Поле | Допустимые значения |
+ |---|---|
+-| `путь` | точная строка из таблицы «Разрешённые пути» |
++| `путь` | точная строка из таблицы «Разрешённые пути» или имя файла по шаблону из раздела «Гипноз/» |
+ | `операция` | `добавить запись` · `обновить запись` · `создать отсутствующий файл` |
+-| `содержимое` | точный текст записи или строк таблицы; для `обновить запись` — `было: … / стало: …`; для `создать отсутствующий файл` — пустой шаблон (заголовок и шапка таблицы), без истории |
++| `содержимое` | точный текст записи или строк таблицы; для `обновить запись` — `было: … / стало: …`; для `создать отсутствующий файл` — пустой шаблон (заголовок и шапка таблицы), без истории; для новых заметок в `Гипноз/` — полный текст заметки из запроса MANUAL |
+ | `дата` | `YYYY-MM-DD` по МСК — день запуска или день указания пользовательницы |
+ | `этап-источник` | `1` · `3` · `6b` · `7` · `MANUAL` |
+ | `основание` | непустое: ссылки, цифры, пути, на которых основана запись; для `MANUAL` — `цитата: «<дословные слова пользовательницы>»; сообщение: <id сообщения или дата и время МСК>; канал: чат Grok Bot` |
+-| `ключ-дубликата` | `post:<id поста>` · `index:Архив постов` · `ledger:<YYYY-MM-DD>:<@handle>` · `ledger-total:<@handle>` · `ledger-meta:обновлено` · `obs:<YYYY-MM-DD>:<кратко>` · `hyp:<кратко>:<YYYY-MM-DD>` · `exp:<кратко>:<YYYY-MM-DD>` · `skip:<YYYY-MM-DD>` · `break:<YYYY-MM-DD>` · `event:<название>:<год>` · `file:<путь>` |
++| `ключ-дубликата` | `post:<id поста>` · `index:Архив постов` · `ledger:<YYYY-MM-DD>:<@handle>` · `ledger-total:<@handle>` · `ledger-meta:обновлено` · `obs:<YYYY-MM-DD>:<кратко>` · `hyp:<кратко>:<YYYY-MM-DD>` · `exp:<кратко>:<YYYY-MM-DD>` · `skip:<YYYY-MM-DD>` · `break:<YYYY-MM-DD>` · `event:<название>:<год>` · `file:<путь>` · `hypno-note:<путь>` · `hypno-link:<путь заметки>` · `hypno-add:<путь>:<кратко>:<YYYY-MM-DD>` · `hypno-meta:обновлено:<YYYY-MM-DD>` |
+ | `статус` | `обязательное` · `необязательное` |
+ Запрос, где нет поля или значение вне списка, не применяется: в отчёте «не применено: неполный запрос». Archive Management ничего не дописывает в запросы и не создаёт записей, которых не прислали.
+ 
+@@ -60,7 +60,7 @@
+ - `MANUAL` проходит те же проверки, что и все: Preflight, allowlist путей, проверки до записи, staged diff, правила push.
+ 
+ ## Разрешённые пути (allowlist)
+-Писать можно только сюда. Всё остальное, включая профиль, канон, README, заметки персонажа, `Гипноз/`, `Отношения/`, шаблоны, — только чтение.
++Писать можно только сюда и в пути раздела «Гипноз/» ниже. Всё остальное, включая профиль, канон, README, заметки персонажа, `Отношения/`, шаблоны, — только чтение.
+ | `путь` | Допустимые `этап-источник` | Создание, если файла нет |
+ |---|---|---|
+ | `Посты/Архив постов.md` | `1` (пересчёт индекса), `MANUAL` | нет (файл есть) |
+@@ -72,6 +72,28 @@
+ | `Посты/События.md` | только `MANUAL` | только после подтверждения пользовательницы; до этого не писать |
+ Источник не из колонки — не применять. Пока создание не подтверждено, запросы «создать отсутствующий файл» и записи в этот файл не применяются: «не применено: файл не создан, нужно подтверждение».
+ 
++### Гипноз/ — только `MANUAL`, без рекурсивного доступа
++Назначение папки: изучение гипноза для фикции, RP и добровольного эротического гипноза между взрослыми; разборы чужих скриптов; разработка своих скриптов для контента. Этапы Routine 0–9 в `Гипноз/` только читают (Content Engine — `Гипноз/Для постов/Приёмы для постов.md` и `Гипноз/Техники/*.md`). Писать сюда можно только по запросу `MANUAL`.
++| `путь` | Назначение | `операция` | Статус в name-status |
++|---|---|---|---|
++| `Гипноз/Скрипты/<Название> (<Автор>).md` | новый разбор чужого скрипта своими словами, после согласованных выводов | только `создать отсутствующий файл` (файла не должно быть) | только `A` |
++| `Гипноз/Источники/<Название> (<Автор>).md` | новый конспект книги или источника по `Гипноз/Шаблон источника.md` | только `создать отсутствующий файл` | только `A` |
++| `Гипноз/Свои скрипты/<Название>.md` | свой скрипт Mirraylina, текст которого пользовательница одобрила | только `создать отсутствующий файл` | только `A` |
++| `Гипноз/Гипноз — главная.md` | ссылка на новую заметку в разделах «Скрипты», «Свои скрипты» или строка таблицы «Источники»; поле `обновлено` | `добавить запись` (ссылка или строка в нужный раздел); `обновить запись` — только поле `обновлено` во frontmatter | только `M` |
++| `Гипноз/Техники/Индукции.md`, `Гипноз/Техники/Углубление.md`, `Гипноз/Техники/Внушения и триггеры.md`, `Гипноз/Техники/Языковые паттерны.md`, `Гипноз/Техники/Пробуждение.md`, `Гипноз/Техники/Безопасность и согласие.md` | новая техника или идея со ссылкой на источник (шаг 3 «Как добавить» из главной) | только `добавить запись` (в конец нужного раздела); существующий текст не меняется | только `M` |
++| `Гипноз/Для постов/Приёмы для постов.md` | новый приём для постов со ссылкой на источник | только `добавить запись` | только `M` |
++Правила имени для шаблонов `<…>`: ровно один сегмент пути внутри указанной папки; без `/`, `\`, `..`, без ведущей точки; оканчивается на `.md`; файл с таким именем не должен существовать (существует — «не применено: файл уже есть», без перезаписи). `.gitkeep` и все существующие файлы не удаляются, не перемещаются и не переименовываются.
++Только чтение всегда: `Гипноз/Шаблон источника.md`, существующие заметки в `Гипноз/Скрипты/`, `Гипноз/Источники/`, `Гипноз/Свои скрипты/` (правка существующих — открытый вопрос к пользовательнице), любые новые подпапки.
++Проверка содержания для любого запроса в `Гипноз/` (агент в чате проверяет до создания запроса и пишет в `основание` строку `проверка содержания: пройдена`; без неё Archive Management запрос не применяет):
++- только фикция, RP и добровольный гипноз между взрослыми; рамка и претолк — в начале, не в конце;
++- ничего, что указывает на несовершеннолетних или на детский контекст;
++- никаких клинических и терапевтических обещаний («игра ≠ терапия»: тревога, травмы, сексуальные проблемы, «настройка» тела — не сюда);
++- никаких инструкций для скрытого влияния на людей без согласия и для реального вреда (дыхательные ограничения, вещества, самоповреждение, опасные действия);
++- полный текст чужих скриптов и книг не хранить: структура своими словами, цитаты не длиннее одного-двух предложений, автор указан;
++- темы, которые пропускаем: инцест, наказание или месть против воли, реальное насилие по сюжету;
++- для приёмов, которые идут в посты: без амнезии, постоянных триггеров, принуждения, обязательного перечитывания, обязательных отчётов, личных сообщений и «полного контроля разума»; в разборах такие места описываются только как «не берём»;
++- никаких личных данных.
++
+ ## Preflight (этап 0) — до любых записей
+ 1. Адреса remote: fetch и push по разделу «Допустимые адреса remote». Не прошло — СТОП.
+ 2. `git rev-parse --show-toplevel` = `/workspace/vault-repo`; `git branch --show-current` = `main`. Иначе — СТОП.
+@@ -85,7 +107,7 @@
+ 
+ ## Запись (этап 8 или ручная задача после Preflight)
+ 1. Проверки до первой записи: `git rev-parse HEAD` = базовый HEAD; `git status --porcelain` пустой; ветка `main`. Не так — не писать, сообщить.
+-2. Каждый запрос: поля по контракту; `путь` точно в allowlist; `этап-источник` разрешён для этого пути. Иначе пункт не применяется и попадает в отчёт.
++2. Каждый запрос: поля по контракту; `путь` точно в allowlist или по шаблону имени из раздела «Гипноз/»; `этап-источник` и `операция` разрешены для этого пути; для `Гипноз/` — в `основание` есть `проверка содержания: пройдена`. Иначе пункт не применяется и попадает в отчёт.
+ 3. Архив: из данных этапа 1 — новые оригиналы и цитаты в тематические заметки по формату профиля; метрики обновлять только у постов моложе 7 дней; уважать размещение пользователя. Поля только из данных этапа 1; нет поля — «нет данных».
+ 4. Запросы этапов 3, 6b, 7 и `MANUAL` применять как есть, без дописывания.
+ 5. Прочитать актуальное содержимое файла непосредственно перед правкой; менять точечно, сохраняя записи и форматирование пользователя.
+@@ -94,16 +116,41 @@
+ 8. Обновить индекс (число постов, медиана, лучшие посты, время замера) — пересчётом из таблиц.
+ 9. `git status --porcelain --untracked-files=all` — в нём только пути, которые этот шаг сам изменил. Любой другой путь — «неожиданное изменение», СТОП (раздел «Остановка»).
+ 10. `git add -- <путь>` для каждого изменённого пути из allowlist по отдельности. Никогда `git add -A`, `git add .`, `git add -u`, `git commit -a` или коммит с pathspec.
+-11. `git diff --cached --check`; `git diff --cached --name-status` — каждая строка: статус `A` или `M` и путь точно из allowlist; полный `git diff --cached` — сверить с запросами.
++11. `git diff --cached --check`; `git diff --cached --name-status` — каждая строка: статус `A` или `M` и путь точно из allowlist или по шаблону раздела «Гипноз/»; полный `git diff --cached` — сверить с запросами.
+ 12. Что-то не так (ошибка --check, путь вне allowlist, `D`, `R`, `C`, `T`, изменение чужих записей пользователя, лишний файл) — СТОП (раздел «Остановка»).
+ 13. Изменений нет — коммит не создавать.
+-14. Один коммит `git commit -m "<короткое сообщение на русском>"`.
++14. Статус в `--name-status` соответствует операции: `создать отсутствующий файл` → `A`, `добавить запись` / `обновить запись` → `M`. Иначе — СТОП.
++15. Зафиксировать проверенное состояние (раздел «Коммит и проверка hooks», шаг 1), затем один коммит.
++
++## Коммит и проверка hooks
++Hooks не отключать и не обходить: никогда `--no-verify`, `-n`, `-c core.hooksPath=…`, переименование или `chmod` hooks, `commit --amend`, `revert`, `reset`, `restore`, `checkout`, `clean`, `stash`.
++1. Непосредственно перед коммитом записать: `STAGED_TREE` = `git write-tree`; `STAGED_NS` = `git -c core.quotepath=false diff --cached --name-status`; `STAGED_SHA` = sha256 от `git diff --cached --binary`; `MSG` = текст сообщения коммита.
++2. `git commit -m "<MSG>"` (hooks выполняются как обычно).
++3. Коммит не создан (код возврата ≠ 0, например отказ pre-commit или commit-msg) — СТОП: `git rev-parse HEAD` должен остаться базовым; отчёт с выводом hook; дополнительно сравнить `git write-tree` с `STAGED_TREE` и `git status --porcelain=v1 --untracked-files=all` — изменил ли hook индекс или файлы. Без повтора, без обхода.
++4. Коммит создан — проверить всё, любое расхождение — СТОП без push:
++   a) `git rev-list --count <базовый HEAD>..HEAD` = `1` и `git rev-parse HEAD^` = базовый HEAD (ровно один новый коммит поверх базы; лишний коммит от hook — расхождение);
++   b) `git rev-parse HEAD^{tree}` = `STAGED_TREE` (hook не менял индекс);
++   c) `git -c core.quotepath=false diff-tree --no-commit-id --name-status -r HEAD` = `STAGED_NS`; каждая строка — путь из allowlist со статусом по шагу 14;
++   d) sha256 от `git diff --binary <базовый HEAD> HEAD` = `STAGED_SHA`;
++   e) `git status --porcelain=v1 --untracked-files=all` пустой (hook не изменил файлы, не создал новых, индекс = HEAD);
++   f) `git log -1 --format=%B` = `MSG` (сравнивать без завершающих переводов строки; изменение сообщения commit-msg hook-ом — расхождение: push не выполнять, сообщить оба текста; принять ли такое — решает пользовательница).
++5. Перед push: `git rev-parse HEAD` = проверенный в шаге 4 коммит.
++6. При расхождении после коммита: коммит остаётся локально, ничего не откатывать и не исправлять. Отчёт (только чтение): базовый HEAD, `HEAD`, `HEAD^`, `git log --oneline <база>..HEAD`, `STAGED_TREE` и `HEAD^{tree}`, `STAGED_NS` и вывод `diff-tree`, оба sha256, `git status`, `git diff`, оба сообщения, вывод hooks. Следующий Preflight остановится: дерево грязное или локальная `main` впереди `origin/main` и GitHub (шаг 7 Preflight).
++Поведение по отказам:
++- pre-commit отклонил — шаг 3; коммита нет; индекс и файлы как есть; Preflight остановится на грязном дереве.
++- hook изменил файлы рабочего дерева — шаг 4e (или шаг 3, если коммит не создан); push нет.
++- hook изменил индекс — шаг 4b/4c/4d; push нет.
++- commit-msg изменил сообщение — шаг 4f; push нет, решение за пользовательницей.
++- post-commit изменил файлы или создал файлы — шаг 4e; push нет.
++- hook создал дополнительный коммит — шаг 4a; push нет.
++- несовпадение дерева или состава — шаг 4b/4c; push нет.
++- pre-push отклонил — раздел «Push», шаг 5 (как отклонённый push): ls-remote, не больше одного повтора при неизменной ветке; коммит остаётся локально.
+ 
+ ## Push
+ 1. Повторить проверку адресов remote (fetch и push). Не прошло — без push, коммит остаётся локально.
+ 2. Pre-push sha: `git ls-remote origin refs/heads/main`. Ошибка или иной вывод — без push. Sha ≠ базовому sha remote (ветка на GitHub изменилась за время запуска) — без push. В обоих случаях коммит остаётся локально, сообщить.
+ 3. `git push origin HEAD:refs/heads/main` (без force, другой формы push нет).
+-4. Успех: `git ls-remote origin refs/heads/main` = `git rev-parse HEAD`; `git status --porcelain` пустой. ls-remote не удался или sha другой — сообщить «push не подтверждён», ничего не исправлять.
++4. Успех: `git ls-remote origin refs/heads/main` = `git rev-parse HEAD` (= проверенный коммит); `git status --porcelain` пустой. ls-remote не удался или sha другой — сообщить «push не подтверждён», ничего не исправлять.
+ 5. Push отклонён: без force, pull, rebase, merge и разрешения конфликтов. Снова `git ls-remote origin refs/heads/main`:
+    - sha = pre-push sha (ветка не изменилась) — не больше одного повтора шага 3;
+    - sha другой — повтора нет; стоп;
+@@ -119,13 +166,13 @@
+ 
+ ## Правила принятия решений
+ - Конфликты не разрешать ни в свою пользу, ни автоматически; историю не переписывать; ничего не откатывать автоматически.
+-- Никогда: `push --force`, `reset`, `restore`, `checkout` файлов, `clean`, `stash`, `rebase`, `merge`, удаление веток или файлов пользователя без явной просьбы.
++- Никогда: `push --force`, `reset`, `restore`, `checkout` файлов, `clean`, `stash`, `rebase`, `merge`, `commit --amend`, `revert`, `--no-verify`, отключение hooks, удаление веток или файлов пользователя без явной просьбы.
+ - Пропускать чистые репосты и ответы в RP-ветках, если профиль не говорит иначе.
+ - Не хранить пароли, ключи и личные данные.
+ 
+ ## Проверка результата
+ - После push ls-remote = локальный HEAD, `git status` чистый.
+-- Правки пользователя на месте; в коммите только пути из allowlist со статусом A или M.
++- Правки пользователя на месте; в коммите только пути из allowlist со статусом по шагу 14; дерево коммита = проверенный staged tree; ровно один новый коммит.
+ - Каждая применённая запись есть в запросах или в данных этапа 1.
+ 
+ ## Формат результата
+--- v2: dryrun-prompt.txt
++++ v3: review/dryrun-prompt.txt
+@@ -34,6 +34,7 @@
+ - Изменений нет — коммит не создавать.
+ - Один локальный коммит, сообщение начинается с «ТЕСТ:» (если в песочнице не задан автор — `git -c user.name=dryrun -c user.email=dryrun@localhost commit -m …`).
+ - Push-часть боевого режима до самой отправки: повторить проверку адресов (fetch — допустимые, push — no_push); pre-push `git ls-remote origin refs/heads/main` записать и сравнить с SANDBOX_REMOTE_BASE (ошибка или другой sha — записать «в боевом режиме push не выполнялся бы»). Саму команду `git push` НЕ выполнять. Записать «push пропущен (ТЕСТ)» и что было бы отправлено: `git log --oneline "$(cat /workspace/dryrun/SANDBOX_REMOTE_BASE)"..HEAD`.
++- Проверка hooks — как в боевом режиме (archive-management, раздел «Коммит и проверка hooks»). Hooks песочницы скопированы из настоящего хранилища (cp -a), pre-push заменён блокирующим; остальные hooks не отключать и не обходить: без `--no-verify`, `-n`, `core.hooksPath`, `commit --amend`. Непосредственно перед коммитом записать в /workspace/dryrun/report/: STAGED_TREE (`git write-tree`), STAGED_NS (`git -c core.quotepath=false diff --cached --name-status`), STAGED_SHA (`git diff --cached --binary | sha256sum | cut -d' ' -f1`), COMMIT_MSG (текст сообщения). После коммита проверить шаги 4a–4f навыка (один новый коммит поверх BASE, `HEAD^{tree}` = STAGED_TREE, `diff-tree` = STAGED_NS, sha256 diff = STAGED_SHA, чистое дерево, сообщение не изменено). Отказ hook или любое расхождение — стоп без отката, коммит (если есть) остаётся, всё записать в отчёт.
+ - После коммита `git status --porcelain` должен быть пустым.
+ - Никаких `--force`, `reset`, `restore`, `checkout`, `clean`, `stash`, `rebase`, `merge`, `pull`, `fetch`, удаления веток и файлов. Любой конфликт или неожиданность — стоп, записать.
+ - Вне /workspace/dryrun ничего не создавать и не менять (кроме чтения). Не менять Routine, навыки, память.
+@@ -64,6 +65,7 @@
+    [ ] этапы 1–7 и 6b не изменили ни одного файла хранилища; этапы 3, 6b и 7 передали запросы этапу 8; запросов MANUAL нет
+    [ ] все запросы — ровно 8 полей с допустимыми значениями
+    [ ] этап 8: проверки HEAD и чистоты до записи; только пути из allowlist; `git add` по путям; staged diff проверен; не больше одного коммита; дерево чистое после коммита; при остановке — ничего не откачено и отчёт полный
++   [ ] hooks: не отключались и не обходились; перед коммитом записаны STAGED_TREE/STAGED_NS/STAGED_SHA/COMMIT_MSG; после коммита — совпадение по шагам 4a–4f (подтверждено --verify)
+    [ ] каждая запись в коммите есть в запросах этапов 3/6b/7 или в данных этапа 1; ничего не додумано; дубликатов нет
+    [ ] профиль прочитан; handle @Mirraylina и user id совпали; данных других ботов нет
+    [ ] ростер — все аккаунты из профиля (в черновике v2 — 12); у каждого статус; охват «X из Y» честный
+--- v2: dryrun-setup.sh
++++ v3: review/dryrun-setup.sh
+@@ -129,6 +129,28 @@
+     { print }' "$ROOT/report/commit-name-status.txt")
+   if [ -z "$bad" ]; then echo "PASS: в коммите только пути из allowlist, только A/M"
+   else echo "FAIL: неожиданные пути или операции в коммите:"; echo "$bad"; fail=1; fi
++  # 6a. Проверка hooks: фактический коммит = проверенный staged diff (шаги 4a–4f навыка).
++  if [ "$n" -eq 1 ]; then
++    R=$ROOT/report
++    for f in STAGED_TREE STAGED_NS STAGED_SHA COMMIT_MSG; do
++      [ -f "$R/$f" ] || { echo "FAIL: нет $R/$f — состояние перед коммитом не записано"; fail=1; }
++    done
++    if [ -f "$R/STAGED_TREE" ] && [ -f "$R/STAGED_NS" ] && [ -f "$R/STAGED_SHA" ] && [ -f "$R/COMMIT_MSG" ]; then
++      [ "$(git -C "$DRY" rev-parse HEAD^)" = "$BASE" ] \
++        && echo "PASS: HEAD^ = BASE (один коммит поверх базы)" || { echo "FAIL: HEAD^ ≠ BASE"; fail=1; }
++      [ "$(git -C "$DRY" rev-parse 'HEAD^{tree}')" = "$(tr -d '[:space:]' < "$R/STAGED_TREE")" ] \
++        && echo "PASS: дерево коммита = STAGED_TREE" || { echo "FAIL: дерево коммита ≠ STAGED_TREE (hook изменил индекс?)"; fail=1; }
++      if git -C "$DRY" -c core.quotepath=false diff-tree --no-commit-id --name-status -r HEAD | diff -u "$R/STAGED_NS" -; then
++        echo "PASS: состав коммита = STAGED_NS"
++      else echo "FAIL: состав коммита ≠ STAGED_NS"; fail=1; fi
++      [ "$(git -C "$DRY" diff --binary "$BASE" HEAD | sha256sum | cut -d' ' -f1)" = "$(tr -d '[:space:]' < "$R/STAGED_SHA")" ] \
++        && echo "PASS: sha256 diff коммита = STAGED_SHA" || { echo "FAIL: содержимое коммита ≠ проверенному staged diff"; fail=1; }
++      if diff <(git -C "$DRY" log -1 --format=%B | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}') \
++              <(sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$R/COMMIT_MSG") >/dev/null; then
++        echo "PASS: сообщение коммита не изменено hook-ом"
++      else echo "FAIL: сообщение коммита отличается от COMMIT_MSG (commit-msg hook?)"; fail=1; fi
++    fi
++  fi
+   # 7. Отчётный diff. git add -A — ТОЛЬКО здесь, в изолированной песочнице, никогда в $SRC.
+   [ "$(cd "$DRY" && git rev-parse --show-toplevel)" = "$DRY" ] || stop "не песочница"
+   ( cd "$DRY" && git add -A \
+
+======================================================================
+6. ОСТАВШИЕСЯ ПРОБЛЕМЫ
+======================================================================
+Блокирующих проблем для одобрения пакета нет: все 15 критериев — PASS (раздел 4).
+
+Предварительные условия запуска. Пакет они не блокируют, но без них Routine или dry-run не смогут работать; решает пользовательница:
+1. Профиль `Настройки/Профиль аккаунта.md` в хранилище не сохранён. Routine остановится на нём, dry-run использует черновик.
+2. Нет `Обучение/` (журнал и эксперименты). Без них записи этапов 3 и 6b не применяются.
+3. Нет `Посты/Перерывы.md` и `Посты/События.md`. Их создание — только по её подтверждению или по MANUAL.
+4. README, строка 98, — предложение есть (`README-line98.proposed.diff`), не применено. Профиль §2.6 правится только вместе с утверждением профиля.
+
+Решения пользовательницы (не блокеры; до решения действует более строгий вариант):
+5. Правка существующих заметок в `Гипноз/` (не дописывание) — пока запрещена.
+6. Правило для своих скриптов (`Свои скрипты/`) — предложено, нужно её подтверждение.
+7. Изменение сообщения коммита commit-msg hook-ом — пока стоп без push.
+8. Вопросы v2, которые остаются в силе:
+   - адреса с токеном и дополнительные формы URL — сейчас стоп;
+   - дни без нужды в черновике — статус пропуска «неизвестен»;
+   - достаточна ли проверка MANUAL по формату;
+   - нет push, если GitHub изменился за время запуска;
+   - 2–4 ls-remote за запуск;
+   - «ВНИМАНИЕ» вместо FAIL в dry-run;
+   - явный `origin main` в pull;
+   - запись учёта за 14 ноя.
+
+Необязательные улучшения (не блокируют):
+9. В Preflight можно выводить список активных hooks (`core.hooksPath`, `.git/hooks` без `.sample`), чтобы пользовательница знала о них заранее.
+10. Можно проверять «проверку содержания» для `Гипноз/` по смыслу, а не только по наличию строки. Сейчас это ответственность агента в чате.
+11. Можно сделать отдельный навык для `Гипноз/`. Не делала: новые навыки вне рамок задачи.
+
+Ограничения проверки:
+- всё проверено только статически (rg, diff, cmp, bash -n);
+- поведение git (вывод `diff-tree`, равенство sha256 двух вариантов diff, работа hooks) в реальном окружении не проверялось;
+- hooks настоящего хранилища я не видела: .git не читала.
+
+======================================================================
+7. ИТОГОВЫЙ СТАТУС: READY FOR APPROVAL
+======================================================================
+Обоснование:
+- все согласованные критерии (15 из 15) выполнены в текстах предложений, есть доказательства по файлам и строкам (раздел 4);
+- блокирующих ошибок безопасности или функциональности не найдено;
+- оставшиеся пункты — предварительные условия запуска, решения пользовательницы с уже выбранным строгим вариантом по умолчанию или необязательные улучшения;
+- статус означает «готово к рассмотрению и одобрению пользовательницей», а не «применено» и не «протестировано».
+
+======================================================================
+СТАТУС
+======================================================================
+- В действующие навыки /home/box/agent-data/workflows/* ничего не записано (cmp: live = fix/live для всех шести).
+- Промпт Routine не менялся. Routine не включалась и не запускалась. Новых автоматизаций нет.
+- Dry-run, dryrun-setup.sh и отдельные этапы не запускались; скрипт проверен только `bash -n`.
+- X не читался; сетевых операций и операций с GitHub не было.
+- В /workspace/vault-repo ни одной git-команды; файлы не создавались и не менялись (только чтение файлов, перечислено в начале).
+- Файлы не удалялись. Изменены только черновики в /workspace/drafts/review/ (v3/, dryrun-prompt.txt, dryrun-setup.sh, checks-v3.*, v2-v3.diff, этот отчёт).
+
+======================================================================
+ПРИМЕНЕНИЕ
+======================================================================
+Не применено. Режим Proposal Only: действующие навыки, промпт Routine 2.0 и хранилище не изменены, Routine и dry-run не запускались. Ожидается решение пользовательницы.
